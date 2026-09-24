@@ -1,0 +1,536 @@
+/* =========================================================
+   NIMBLE INTEGRATED ACADEMY (NIA)
+   REGISTER PAGE
+========================================================= */
+
+.nia-register-page {
+  min-height: 100vh;
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 30px 20px;
+
+  background:
+    radial-gradient(
+      circle at 15% 20%,
+      rgba(245, 210, 26, 0.12),
+      transparent 25%
+    ),
+    linear-gradient(
+      135deg,
+      #087f8c 0%,
+      #1fa7b3 50%,
+      #2563eb 100%
+    );
+
+  font-family: "Poppins", "Inter", Arial, sans-serif;
+
+  box-sizing: border-box;
+}
+
+.nia-register-page *,
+.nia-register-page *::before,
+.nia-register-page *::after {
+  box-sizing: border-box;
+}
+
+/* =========================================================
+   REGISTER CARD
+========================================================= */
+
+.nia-register-card {
+  width: 100%;
+  max-width: 780px;
+
+  padding: 30px 55px;
+
+  background: #ffffff;
+
+  border: 1px solid rgba(31, 167, 179, 0.12);
+  border-radius: 22px;
+
+  box-shadow:
+    0 18px 55px rgba(0, 0, 0, 0.10);
+
+  box-sizing: border-box;
+}
+
+/* =========================================================
+   LOGO
+========================================================= */
+
+.nia-register-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-bottom: 8px;
+}
+
+.nia-register-logo a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  text-decoration: none;
+}
+
+.nia-register-logo img {
+  width: 68px;
+  height: 68px;
+
+  display: block;
+
+  object-fit: contain;
+
+  border-radius: 50%;
+}
+
+/* =========================================================
+   SCHOOL NAME
+========================================================= */
+
+.nia-register-school {
+  text-align: center;
+
+  margin-bottom: 14px;
+}
+
+.nia-register-school h1 {
+  margin: 0;
+
+  color: #075d67;
+
+  font-size: 18px;
+  font-weight: 800;
+
+  letter-spacing: 0.3px;
+}
+
+.nia-register-school span {
+  display: block;
+
+  margin-top: 2px;
+
+  color: #1fa7b3;
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.nia-register-header {
+  text-align: center;
+
+  margin-bottom: 20px;
+}
+
+.nia-register-header > span {
+  display: inline-block;
+
+  margin-bottom: 5px;
+
+  color: #1fa7b3;
+
+  font-size: 11px;
+  font-weight: 800;
+
+  letter-spacing: 1.4px;
+}
+
+.nia-register-header h1,
+.nia-register-header h2 {
+  margin: 0;
+
+  color: #12343b;
+
+  font-size: 28px;
+  line-height: 1.2;
+
+  font-weight: 800;
+}
+
+.nia-register-header p {
+  max-width: 520px;
+
+  margin: 6px auto 0;
+
+  color: #71858a;
+
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+/* =========================================================
+   FORM
+========================================================= */
+
+.nia-register-form {
+  width: 100%;
+
+  display: grid;
+
+  grid-template-columns: 1fr 1fr;
+
+  column-gap: 22px;
+  row-gap: 14px;
+}
+
+/*
+   IMPORTANT:
+   If Register.jsx does not have className="nia-register-form"
+   on the <form>, this rule will not work.
+
+   Use:
+   <form onSubmit={handleSubmit} className="nia-register-form">
+*/
+
+/* =========================================================
+   INPUT GROUP
+========================================================= */
+
+.nia-input-group {
+  width: 100%;
+
+  margin: 0;
+}
+
+.nia-input-group label {
+  display: block;
+
+  margin-bottom: 6px;
+
+  color: #173f46;
+
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.nia-input-group input {
+  width: 100%;
+  height: 46px;
+
+  padding: 0 14px;
+
+  border: 1px solid #d9e5e8;
+  border-radius: 10px;
+
+  outline: none;
+
+  background: #fbfdfe;
+
+  color: #183b42;
+
+  font-family: inherit;
+  font-size: 14px;
+
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.nia-input-group input::placeholder {
+  color: #9aabad;
+}
+
+.nia-input-group input:hover {
+  border-color: #b8d9dd;
+}
+
+.nia-input-group input:focus {
+  border-color: #1fa7b3;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 0 0 3px rgba(31, 167, 179, 0.10);
+}
+
+/* =========================================================
+   ERROR
+========================================================= */
+
+.nia-register-error {
+  grid-column: 1 / -1;
+
+  margin: 0;
+
+  padding: 10px 13px;
+
+  border: 1px solid #ffd2d2;
+  border-radius: 9px;
+
+  background: #fff1f1;
+
+  color: #c62828;
+
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+/* =========================================================
+   REGISTER BUTTON
+========================================================= */
+
+.nia-register-button {
+  grid-column: 1 / -1;
+
+  width: 100%;
+  height: 50px;
+
+  margin-top: 2px;
+
+  border: none;
+  border-radius: 10px;
+
+  background: #1fa7b3;
+
+  color: #ffffff;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 10px;
+
+  font-family: inherit;
+
+  font-size: 14px;
+  font-weight: 800;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.nia-register-button span {
+  font-size: 19px;
+  line-height: 1;
+}
+
+.nia-register-button:hover {
+  background: #075d67;
+
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 8px 20px rgba(7, 93, 103, 0.18);
+}
+
+.nia-register-button:active {
+  transform: translateY(0);
+}
+
+/* =========================================================
+   LOGIN LINK
+========================================================= */
+
+.nia-register-login {
+  margin-top: 16px;
+
+  text-align: center;
+
+  color: #71858a;
+
+  font-size: 13px;
+}
+
+.nia-register-login a {
+  margin-left: 5px;
+
+  color: #1fa7b3;
+
+  font-weight: 800;
+
+  text-decoration: none;
+
+  transition: color 0.2s ease;
+}
+
+.nia-register-login a:hover {
+  color: #075d67;
+
+  text-decoration: underline;
+}
+
+/* =========================================================
+   FOOTER
+========================================================= */
+
+.nia-register-footer {
+  margin-top: 14px;
+
+  padding-top: 12px;
+
+  border-top: 1px solid #edf2f3;
+
+  text-align: center;
+
+  color: #98a7aa;
+
+  font-size: 10px;
+  font-weight: 600;
+}
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 800px) {
+  .nia-register-card {
+    max-width: 720px;
+
+    padding: 28px 35px;
+  }
+
+  .nia-register-form {
+    column-gap: 18px;
+  }
+}
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 700px) {
+  .nia-register-page {
+    min-height: 100vh;
+
+    padding: 20px 12px;
+
+    align-items: flex-start;
+  }
+
+  .nia-register-card {
+    width: 100%;
+
+    max-width: 100%;
+
+    padding: 28px 20px;
+
+    border-radius: 18px;
+  }
+
+  .nia-register-form {
+    grid-template-columns: 1fr;
+
+    column-gap: 0;
+    row-gap: 14px;
+  }
+
+  .nia-register-logo img {
+    width: 62px;
+    height: 62px;
+  }
+
+  .nia-register-school h1 {
+    font-size: 15px;
+  }
+
+  .nia-register-school span {
+    font-size: 11px;
+  }
+
+  .nia-register-header {
+    margin-bottom: 18px;
+  }
+
+  .nia-register-header h1,
+  .nia-register-header h2 {
+    font-size: 25px;
+  }
+
+  .nia-register-header p {
+    font-size: 12px;
+  }
+
+  .nia-input-group input {
+    height: 48px;
+  }
+
+  .nia-register-button {
+    height: 49px;
+  }
+}
+
+/* =========================================================
+   SMALL MOBILE
+========================================================= */
+
+@media (max-width: 400px) {
+  .nia-register-card {
+    padding: 24px 17px;
+  }
+
+  .nia-register-logo img {
+    width: 58px;
+    height: 58px;
+  }
+
+  .nia-register-header h1,
+  .nia-register-header h2 {
+    font-size: 23px;
+  }
+
+  .nia-input-group label {
+    font-size: 12px;
+  }
+
+  .nia-input-group input {
+    font-size: 13px;
+  }
+}
+
+/* =========================================================
+   REDUCED MOTION
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .nia-register-page *,
+  .nia-register-page *::before,
+  .nia-register-page *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+
+  .nia-register-button:hover {
+    transform: none;
+  }
+}
+/* =========================================================
+   BACK HOME BUTTON
+========================================================= */
+
+.nia-back-home {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  margin-bottom: 14px;
+
+  color: #64748b;
+  text-decoration: none;
+
+  font-family: "Poppins", "Inter", Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+
+  transition:
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.nia-back-home:hover {
+  color: #1fa7b3;
+  transform: translateX(-2px);
+}

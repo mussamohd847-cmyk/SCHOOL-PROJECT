@@ -1,0 +1,356 @@
+/* =========================================================
+   NIA SCHOOL & MADRASA
+   LOGIN PAGE
+========================================================= */
+
+.nia-login-page {
+  min-height: 100vh;
+  width: 100%;
+  background: #f4f8fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 30px 20px;
+  box-sizing: border-box;
+}
+
+.nia-login-card {
+  width: 100%;
+  max-width: 480px;
+  background: #ffffff;
+  padding: 34px 42px;
+  border-radius: 22px;
+  border: 1px solid rgba(31, 167, 179, 0.12);
+  box-shadow: 0 18px 55px rgba(0, 0, 0, 0.10);
+  box-sizing: border-box;
+}
+
+/* =========================================================
+   BRAND
+========================================================= */
+
+.nia-login-brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.nia-login-logo-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.nia-login-logo {
+  width: 70px;
+  height: 70px;
+  object-fit: contain;
+  border-radius: 50%;
+  display: block;
+}
+
+.nia-login-school-name {
+  text-align: left;
+}
+
+.nia-login-school-name h1 {
+  margin: 0;
+  color: #12343b;
+  font-family: "Poppins", sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.nia-login-school-name span {
+  display: block;
+  margin-top: 4px;
+  color: #1fa7b3;
+  font-family: "Poppins", sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.nia-login-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.nia-login-header span {
+  display: inline-block;
+  margin-bottom: 7px;
+  color: #1fa7b3;
+  font-family: "Poppins", sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+}
+
+.nia-login-header h2 {
+  margin: 0;
+  color: #12343b;
+  font-family: "Poppins", sans-serif;
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.nia-login-header p {
+  margin: 9px auto 0;
+  max-width: 380px;
+  color: #6b7c83;
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* =========================================================
+   FORM
+========================================================= */
+
+.nia-login-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 17px;
+}
+
+.nia-login-input-group {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.nia-login-input-group label {
+  color: #263f46;
+  font-family: "Poppins", sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.nia-login-input-group input {
+  width: 100%;
+  height: 48px;
+  padding: 0 14px;
+  border: 1px solid #d9e5e8;
+  border-radius: 11px;
+  outline: none;
+  background: #ffffff;
+  color: #17353c;
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
+  box-sizing: border-box;
+  transition: 0.2s ease;
+}
+
+.nia-login-input-group input::placeholder {
+  color: #a3b0b5;
+}
+
+.nia-login-input-group input:hover {
+  border-color: #a9d6db;
+}
+
+.nia-login-input-group input:focus {
+  border-color: #1fa7b3;
+  box-shadow: 0 0 0 3px rgba(31, 167, 179, 0.12);
+}
+
+/* =========================================================
+   ERROR
+========================================================= */
+
+.nia-login-error {
+  width: 100%;
+  padding: 11px 13px;
+  border-radius: 9px;
+  background: #fff1f1;
+  border: 1px solid rgba(231, 76, 60, 0.22);
+  color: #d63d31;
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  line-height: 1.4;
+  box-sizing: border-box;
+}
+
+/* =========================================================
+   LOGIN BUTTON
+========================================================= */
+
+.nia-login-button {
+  width: 100%;
+  height: 50px;
+  border: none;
+  border-radius: 11px;
+  background: #1fa7b3;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  font-family: "Poppins", sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  transition: 0.2s ease;
+}
+
+.nia-login-button span {
+  font-size: 20px;
+  line-height: 1;
+  transition: transform 0.2s ease;
+}
+
+.nia-login-button:hover:not(:disabled) {
+  background: #168e99;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(31, 167, 179, 0.20);
+}
+
+.nia-login-button:hover:not(:disabled) span {
+  transform: translateX(4px);
+}
+
+.nia-login-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.nia-login-button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+/* =========================================================
+   REGISTER LINK
+========================================================= */
+
+.nia-login-register {
+  margin-top: 20px;
+  text-align: center;
+  color: #718188;
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+}
+
+.nia-login-register a {
+  margin-left: 5px;
+  color: #1fa7b3;
+  font-weight: 700;
+  text-decoration: none;
+  transition: 0.2s ease;
+}
+
+.nia-login-register a:hover {
+  color: #147e87;
+  text-decoration: underline;
+}
+
+/* =========================================================
+   FOOTER
+========================================================= */
+
+.nia-login-footer {
+  margin-top: 20px;
+  padding-top: 17px;
+  border-top: 1px solid #edf1f2;
+  text-align: center;
+  color: #9aa8ad;
+  font-family: "Inter", sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.2px;
+}
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 600px) {
+  .nia-login-page {
+    padding: 20px 14px;
+  }
+
+  .nia-login-card {
+    max-width: 100%;
+    padding: 28px 22px;
+    border-radius: 18px;
+  }
+
+  .nia-login-brand {
+    gap: 10px;
+  }
+
+  .nia-login-logo {
+    width: 58px;
+    height: 58px;
+  }
+
+  .nia-login-school-name h1 {
+    font-size: 15px;
+  }
+
+  .nia-login-school-name span {
+    font-size: 11px;
+  }
+
+  .nia-login-header h2 {
+    font-size: 24px;
+  }
+
+  .nia-login-header p {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 400px) {
+  .nia-login-card {
+    padding: 24px 18px;
+  }
+
+  .nia-login-brand {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .nia-login-school-name {
+    text-align: center;
+  }
+
+  .nia-login-school-name h1 {
+    font-size: 14px;
+  }
+}/* =========================================================
+   BACK HOME BUTTON
+========================================================= */
+
+.nia-back-home {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  margin-bottom: 14px;
+
+  color: #64748b;
+  text-decoration: none;
+
+  font-family: "Poppins", "Inter", Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+
+  transition:
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.nia-back-home:hover {
+  color: #1fa7b3;
+  transform: translateX(-2px);
+}
