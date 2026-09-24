@@ -134,13 +134,12 @@ function Home() {
             ================================================== */}
 
             <h1>
-              Quality Education.
+              Actions are by
               <br />
               <span>
-                Strong Character.
+                Intentions
               </span>
-              <br />
-              Bright Future.
+             
             </h1>
 
             {/* =================================================
