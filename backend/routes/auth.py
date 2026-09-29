@@ -1,8 +1,10 @@
+from datetime import datetime
+
 from flask import Blueprint, request
 
 from database import db
 from models import User
-from utils.auth import generate_token
+from utils.auth import generate_token, login_required
 from utils.responses import success_response, error_response
 
 
@@ -13,8 +15,13 @@ auth_bp = Blueprint(
 )
 
 
+# ==============================================================
+# LOGIN
+# ==============================================================
+
 @auth_bp.route("/login", methods=["POST"])
 def login():
+
     data = request.get_json(silent=True) or {}
 
     username = str(data.get("username", "")).strip()
@@ -26,127 +33,140 @@ def login():
             400,
         )
 
-    # Default NIA administrator
+    # Normalize username
+    username = username.lower()
+
+    # ==========================================================
+    # DEFAULT ADMIN ACCOUNT
+    # Username: admin
+    # Password: admin
+    # ==========================================================
+
     if username == "admin" and password == "admin":
-        user = User.query.filter_by(username="admin").first()
+
+        user = User.query.filter_by(
+            username="admin"
+        ).first()
+
+        # ------------------------------------------------------
+        # CREATE ADMIN IF DOES NOT EXIST
+        # ------------------------------------------------------
 
         if not user:
+
             user = User(
                 username="admin",
-                role="ADMIN",
-                status="ACTIVE",
+                role="admin",
+                status="active",
                 name="NIA Administrator",
             )
 
-            if hasattr(user, "set_password"):
-                user.set_password("admin")
-            else:
-                from werkzeug.security import generate_password_hash
-                user.password_hash = generate_password_hash("admin")
+            user.set_password("admin")
 
             db.session.add(user)
             db.session.commit()
 
-        else:
-            # Make sure the default administrator remains active
-            user.role = "ADMIN"
-            user.status = "ACTIVE"
+        # ------------------------------------------------------
+        # MAKE SURE ADMIN ACCOUNT IS CORRECT
+        # ------------------------------------------------------
 
-            if hasattr(user, "set_password"):
-                user.set_password("admin")
-            elif hasattr(user, "password_hash"):
-                from werkzeug.security import generate_password_hash
-                user.password_hash = generate_password_hash("admin")
+        else:
+
+            user.username = "admin"
+            user.role = "admin"
+            user.status = "active"
+            user.name = "NIA Administrator"
+
+            user.set_password("admin")
 
             db.session.commit()
 
-        token = generate_token(user)
+    # ==========================================================
+    # NORMAL DATABASE USER
+    # ==========================================================
 
-        return success_response(
-            "Login successful",
-            {
-                "token": token,
-                "user": user.to_dict() if hasattr(user, "to_dict") else {
-                    "id": user.id,
-                    "username": user.username,
-                    "role": user.role,
-                    "status": user.status,
-                    "name": getattr(user, "name", "NIA Administrator"),
-                },
-            },
-        )
+    else:
 
-    # Normal database users
-    user = User.query.filter_by(username=username).first()
+        user = User.query.filter_by(
+            username=username
+        ).first()
 
-    if not user:
-        return error_response(
-            "Invalid username or password",
-            401,
-        )
+        if not user:
 
-    if getattr(user, "status", "ACTIVE") != "ACTIVE":
-        return error_response(
-            "User account is inactive",
-            403,
-        )
+            return error_response(
+                "Invalid username or password",
+                401,
+            )
 
-    password_valid = False
+        # ------------------------------------------------------
+        # CHECK ACCOUNT STATUS
+        # ------------------------------------------------------
 
-    if hasattr(user, "check_password"):
-        password_valid = user.check_password(password)
+        if str(user.status).lower() != "active":
 
-    elif hasattr(user, "password_hash"):
-        from werkzeug.security import check_password_hash
+            return error_response(
+                "User account is inactive",
+                403,
+            )
 
-        password_valid = check_password_hash(
-            user.password_hash,
-            password,
-        )
+        # ------------------------------------------------------
+        # CHECK PASSWORD
+        # ------------------------------------------------------
 
-    elif hasattr(user, "password"):
-        password_valid = user.password == password
+        if not user.check_password(password):
 
-    if not password_valid:
-        return error_response(
-            "Invalid username or password",
-            401,
-        )
+            return error_response(
+                "Invalid username or password",
+                401,
+            )
+
+    # ==========================================================
+    # FORCE CORRECT ADMIN STATUS
+    # ==========================================================
+
+    if username == "admin":
+
+        user.role = "admin"
+        user.status = "active"
+
+    # ==========================================================
+    # UPDATE LAST LOGIN
+    # ==========================================================
+
+    user.last_login_at = datetime.utcnow()
+
+    db.session.commit()
+
+    # ==========================================================
+    # GENERATE JWT TOKEN
+    # ==========================================================
 
     token = generate_token(user)
+
+    # ==========================================================
+    # RESPONSE
+    # ==========================================================
 
     return success_response(
         "Login successful",
         {
             "token": token,
-            "user": user.to_dict() if hasattr(user, "to_dict") else {
-                "id": user.id,
-                "username": user.username,
-                "role": user.role,
-                "status": user.status,
-                "name": getattr(user, "name", username),
-            },
+            "user": user.to_dict(),
         },
     )
 
 
+# ==============================================================
+# CURRENT LOGGED-IN USER
+# ==============================================================
+
 @auth_bp.route("/me", methods=["GET"])
+@login_required
 def me():
-    from utils.auth import login_required
 
-    @login_required
-    def current_user():
-        user = request.current_user
+    user = request.current_user
 
-        return success_response(
-            "Current user",
-            user.to_dict() if hasattr(user, "to_dict") else {
-                "id": user.id,
-                "username": user.username,
-                "role": user.role,
-                "status": user.status,
-                "name": getattr(user, "name", user.username),
-            },
-        )
-
-    return current_user()
+    return success_response(
+        "Current user",
+        user.to_dict(),
+    )

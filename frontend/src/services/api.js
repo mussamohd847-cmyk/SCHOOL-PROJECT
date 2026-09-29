@@ -1,11 +1,14 @@
 import axios from "axios";
 
-const api = axios.create({
-  baseURL:
-    import.meta.env.VITE_API_URL ||
-    "http://127.0.0.1:6001/api",
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL ||
+  "http://127.0.0.1:6001/api";
 
+const api = axios.create({
+  baseURL: API_BASE_URL,
+  withCredentials: true,
   headers: {
+    Accept: "application/json",
     "Content-Type": "application/json",
   },
 });
@@ -15,7 +18,9 @@ api.interceptors.request.use(
     const token = localStorage.getItem("nia_token");
 
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+      config.headers.Authorization = token.startsWith("Bearer ")
+        ? token
+        : `Bearer ${token}`;
     }
 
     return config;
@@ -26,11 +31,12 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    console.error(
-      "API ERROR:",
-      error.response?.status,
-      error.response?.data || error.message
-    );
+    if (error.response?.status === 401) {
+      console.error(
+        "AUTHENTICATION ERROR:",
+        error.response?.data || "Authentication failed"
+      );
+    }
 
     return Promise.reject(error);
   }

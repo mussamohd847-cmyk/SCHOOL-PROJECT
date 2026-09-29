@@ -16,16 +16,41 @@ export default function Login() {
 
     if (loading) return;
 
+    const cleanUsername = username.trim();
+
+    if (!cleanUsername || !password) {
+      setError("Please enter your username and password.");
+      return;
+    }
+
     setLoading(true);
     setError("");
 
     try {
       const response = await api.post("/auth/login", {
-        username: username.trim(),
-        password,
+        username: cleanUsername,
+        password: password,
       });
 
-      const body = response.data;
+      /*
+       * Expected backend response:
+       *
+       * {
+       *   success: true,
+       *   data: {
+       *     token: "...",
+       *     user: {
+       *       id: 1,
+       *       username: "admin",
+       *       name: "NIA Administrator",
+       *       role: "admin",
+       *       status: "active"
+       *     }
+       *   }
+       * }
+       */
+
+      const body = response?.data;
 
       const token = body?.data?.token;
       const user = body?.data?.user;
@@ -38,39 +63,55 @@ export default function Login() {
         throw new Error("User information was not returned.");
       }
 
-      // Save authentication data
+      if (user.status && String(user.status).toLowerCase() !== "active") {
+        throw new Error(
+          "Your account is inactive. Please contact the administrator."
+        );
+      }
+
+      const role = String(user.role || "")
+        .trim()
+        .toLowerCase();
+
+      /*
+       * Save login information
+       */
       localStorage.setItem("nia_token", token);
       localStorage.setItem("nia_user", JSON.stringify(user));
       localStorage.setItem("nia_logged_in", "true");
 
-      // Get actual backend role
-      const role = String(user.role || "")
-        .trim()
-        .toUpperCase();
+      console.log("NIA LOGIN SUCCESS:", user);
+      console.log("NIA USER ROLE:", role);
 
-      console.log("LOGIN SUCCESS:", user);
-      console.log("USER ROLE:", role);
+      /*
+       * Database roles:
+       *
+       * admin
+       * accountant
+       * teacher
+       * parent
+       * pupil
+       */
 
-      // Role-based navigation
       switch (role) {
-        case "ADMIN":
+        case "admin":
           navigate("/dashboard", { replace: true });
           break;
 
-        case "STUDENT":
-          navigate("/student/dashboard", { replace: true });
-          break;
-
-        case "TEACHER":
-          navigate("/teacher/dashboard", { replace: true });
-          break;
-
-        case "ACCOUNTANT":
+        case "accountant":
           navigate("/accountant/dashboard", { replace: true });
           break;
 
-        case "PARENT":
+        case "teacher":
+          navigate("/teacher/dashboard", { replace: true });
+          break;
+
+        case "parent":
           navigate("/parent/dashboard", { replace: true });
+          break;
+
+        case "pupil":
+          navigate("/student/dashboard", { replace: true });
           break;
 
         default:
@@ -79,19 +120,28 @@ export default function Login() {
           localStorage.removeItem("nia_logged_in");
 
           setError(
-            `Your account role "${role || "UNKNOWN"}" is not recognized.`
+            `Your account role "${role || "unknown"}" is not recognized.`
           );
           break;
       }
     } catch (err) {
-      console.error("LOGIN ERROR:", err);
+      console.error("NIA LOGIN ERROR:", err);
 
-      setError(
+      /*
+       * Axios-style error
+       */
+      const backendMessage =
         err?.response?.data?.message ||
-          err?.response?.data?.error ||
-          err?.message ||
-          "Invalid username or password."
-      );
+        err?.response?.data?.error ||
+        err?.response?.data?.data?.message;
+
+      if (backendMessage) {
+        setError(backendMessage);
+      } else if (err?.message) {
+        setError(err.message);
+      } else {
+        setError("Unable to connect to the server.");
+      }
     } finally {
       setLoading(false);
     }
@@ -103,7 +153,10 @@ export default function Login() {
 
         {/* LOGO */}
         <div className="nia-login-brand">
-          <Link to="/" className="nia-login-logo-link">
+          <Link
+            to="/"
+            className="nia-login-logo-link"
+          >
             <img
               src="/NIA SCHOOLS.jpg"
               alt="Nimble Integrated Academy"
@@ -119,12 +172,12 @@ export default function Login() {
 
         {/* HEADER */}
         <div className="nia-login-header">
-          <span>SCHOOL & MADRASA</span>
+          <span>SCHOOL &amp; MADRASA</span>
 
           <h2>Welcome Back</h2>
 
           <p>
-            Sign in to access the NIA School & Madrasa
+            Sign in to access the NIA School &amp; Madrasa
             Management System.
           </p>
         </div>
@@ -133,7 +186,9 @@ export default function Login() {
         <form
           onSubmit={handleSubmit}
           className="nia-login-form"
+          noValidate
         >
+
           {/* USERNAME */}
           <div className="nia-login-input-group">
             <label htmlFor="username">
@@ -142,6 +197,7 @@ export default function Login() {
 
             <input
               id="username"
+              name="username"
               type="text"
               value={username}
               onChange={(e) => {
@@ -150,6 +206,8 @@ export default function Login() {
               }}
               placeholder="Enter username"
               autoComplete="username"
+              autoFocus
+              disabled={loading}
               required
             />
           </div>
@@ -162,6 +220,7 @@ export default function Login() {
 
             <input
               id="password"
+              name="password"
               type="password"
               value={password}
               onChange={(e) => {
@@ -170,13 +229,17 @@ export default function Login() {
               }}
               placeholder="Enter password"
               autoComplete="current-password"
+              disabled={loading}
               required
             />
           </div>
 
           {/* ERROR */}
           {error && (
-            <div className="nia-login-error">
+            <div
+              className="nia-login-error"
+              role="alert"
+            >
               {error}
             </div>
           )}
@@ -185,19 +248,32 @@ export default function Login() {
           <button
             type="submit"
             className="nia-login-button"
-            disabled={loading}
+            disabled={
+              loading ||
+              !username.trim() ||
+              !password
+            }
           >
             <span>
-              {loading ? "Signing in..." : "Sign In"}
+              {loading
+                ? "Signing in..."
+                : "Sign In"}
             </span>
 
-            {!loading && <span>→</span>}
+            {!loading && (
+              <span aria-hidden="true">
+                →
+              </span>
+            )}
           </button>
         </form>
 
         {/* REGISTER */}
         <div className="nia-login-register">
-          <span>Don't have an account?</span>
+          <span>
+            Don't have an account?
+          </span>
+
           <Link to="/register">
             Register
           </Link>

@@ -8,7 +8,7 @@ import {
 } from "react-router-dom";
 
 /* =========================================================
-   PUBLIC WEBSITE PAGES
+   PUBLIC PAGES
 ========================================================= */
 
 import Home from "./pages/public/Home";
@@ -19,14 +19,14 @@ import MadrasaPublic from "./pages/public/Madrasa";
 import Contact from "./pages/public/Contact";
 
 /* =========================================================
-   LOGIN & REGISTER
+   AUTH
 ========================================================= */
 
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 
 /* =========================================================
-   MANAGEMENT SYSTEM PAGES
+   MANAGEMENT PAGES
 ========================================================= */
 
 import Dashboard from "./pages/Dashboard";
@@ -41,134 +41,138 @@ import Settings from "./pages/Settings";
 import Activity from "./pages/Activity";
 
 /* =========================================================
-   MANAGEMENT MENU
+   MENU
 ========================================================= */
 
 const menu = [
-  [
-    "dashboard",
-    "Dashboard",
-    "⌂",
-    ["ADMIN", "ACCOUNTANT", "TEACHER", "PARENT", "PUPIL"],
-  ],
-
-  [
-    "students",
-    "Students",
-    "♙",
-    ["ADMIN", "ACCOUNTANT", "TEACHER"],
-  ],
-
-  [
-    "teachers",
-    "Teachers",
-    "♟",
-    ["ADMIN"],
-  ],
-
-  [
-    "academics",
-    "Academics",
-    "▣",
-    ["ADMIN", "TEACHER"],
-  ],
-
-  [
-    "finance",
-    "Finance",
-    "▤",
-    ["ADMIN", "ACCOUNTANT"],
-  ],
-
-  [
-    "madrasa",
-    "Madrasa",
-    "☪",
-    ["ADMIN", "TEACHER"],
-  ],
-
-  [
-    "timetable",
-    "Timetable",
-    "◷",
-    ["ADMIN", "TEACHER"],
-  ],
-
-  [
-    "reports",
-    "Reports",
-    "▥",
-    ["ADMIN", "ACCOUNTANT", "TEACHER", "PARENT", "PUPIL"],
-  ],
-
-  [
-    "activity",
-    "Activity Log",
-    "◉",
-    ["ADMIN"],
-  ],
-
-  [
-    "settings",
-    "Settings",
-    "⚙",
-    ["ADMIN"],
-  ],
+  {
+    id: "dashboard",
+    label: "Dashboard",
+    icon: "⌂",
+    path: "/dashboard",
+    roles: ["ADMIN", "ACCOUNTANT", "TEACHER", "PARENT", "PUPIL"],
+  },
+  {
+    id: "students",
+    label: "Students",
+    icon: "♙",
+    path: "/students",
+    roles: ["ADMIN", "ACCOUNTANT", "TEACHER"],
+  },
+  {
+    id: "teachers",
+    label: "Teachers",
+    icon: "♟",
+    path: "/teachers",
+    roles: ["ADMIN"],
+  },
+  {
+    id: "academics",
+    label: "Academics",
+    icon: "▣",
+    path: "/academics",
+    roles: ["ADMIN", "TEACHER"],
+  },
+  {
+    id: "finance",
+    label: "Finance",
+    icon: "▤",
+    path: "/finance",
+    roles: ["ADMIN", "ACCOUNTANT"],
+  },
+  {
+    id: "madrasa",
+    label: "Madrasa",
+    icon: "☪",
+    path: "/madrasa",
+    roles: ["ADMIN", "TEACHER"],
+  },
+  {
+    id: "timetable",
+    label: "Timetable",
+    icon: "◷",
+    path: "/timetable",
+    roles: ["ADMIN", "TEACHER"],
+  },
+  {
+    id: "reports",
+    label: "Reports",
+    icon: "▥",
+    path: "/reports",
+    roles: ["ADMIN", "ACCOUNTANT", "TEACHER", "PARENT", "PUPIL"],
+  },
+  {
+    id: "activity",
+    label: "Activity Log",
+    icon: "◉",
+    path: "/activity",
+    roles: ["ADMIN"],
+  },
+  {
+    id: "settings",
+    label: "Settings",
+    icon: "⚙",
+    path: "/settings",
+    roles: ["ADMIN"],
+  },
 ];
 
 /* =========================================================
-   AUTHENTICATION
+   AUTH HELPERS
 ========================================================= */
 
 function isLoggedIn() {
-  const token = localStorage.getItem("nia_token");
-
-  return Boolean(token);
+  return Boolean(
+    localStorage.getItem("nia_token")
+  );
 }
-
-/* =========================================================
-   CURRENT USER
-========================================================= */
 
 function getCurrentUser() {
   try {
-    const storedUser = localStorage.getItem("nia_user");
+    const storedUser =
+      localStorage.getItem("nia_user");
 
     if (!storedUser) {
       return {
         id: 1,
         username: "admin",
+        name: "NIA Administrator",
         role: "ADMIN",
-        name: "Administrator",
       };
     }
 
-    const parsed = JSON.parse(storedUser);
+    const user = JSON.parse(storedUser);
 
     return {
-      ...parsed,
-      role: String(parsed.role || "ADMIN").toUpperCase(),
+      ...user,
+      role: String(
+        user.role || "ADMIN"
+      ).toUpperCase(),
     };
   } catch {
     return {
       id: 1,
       username: "admin",
+      name: "NIA Administrator",
       role: "ADMIN",
-      name: "Administrator",
     };
   }
 }
 
 /* =========================================================
-   MANAGEMENT SHELL
+   MANAGEMENT LAYOUT
 ========================================================= */
 
-function Shell({ children }) {
+function ManagementLayout({ children }) {
   const location = useLocation();
 
   const [open, setOpen] = useState(false);
 
   const user = getCurrentUser();
+
+  const allowedMenu = menu.filter((item) =>
+    item.roles.includes(user.role)
+  );
 
   const logout = () => {
     localStorage.removeItem("nia_token");
@@ -178,16 +182,22 @@ function Shell({ children }) {
     window.location.href = "/login";
   };
 
-  const allowed = menu.filter((item) =>
-    item[3].includes(user.role)
-  );
-
   return (
     <div className="app">
 
-      {/* SIDEBAR */}
+      {/* ===================================================
+          SIDEBAR
+      =================================================== */}
 
-      <aside className={open ? "sidebar open" : "sidebar"}>
+      <aside
+        className={
+          open
+            ? "sidebar open"
+            : "sidebar"
+        }
+      >
+
+        {/* BRAND */}
 
         <div className="brand">
 
@@ -203,33 +213,38 @@ function Shell({ children }) {
 
         </div>
 
+        {/* MENU */}
+
         <nav>
 
-          {allowed.map(([id, label, icon]) => {
+          {allowedMenu.map((item) => {
 
-            const route =
-              id === "dashboard"
-                ? "/dashboard"
-                : `/${id}`;
-
-            const active =
-              location.pathname === route ||
-              location.pathname.startsWith(`${route}/`);
+            const isActive =
+              location.pathname === item.path ||
+              location.pathname.startsWith(
+                `${item.path}/`
+              );
 
             return (
               <Link
-                key={id}
-                to={route}
-                className={active ? "active" : ""}
-                onClick={() => setOpen(false)}
+                key={item.id}
+                to={item.path}
+                className={
+                  isActive
+                    ? "active"
+                    : ""
+                }
+                onClick={() => {
+                  setOpen(false);
+                }}
               >
 
                 <span className="nav-icon">
-                  {icon}
+                  {item.icon}
                 </span>
 
                 <span className="nav-label">
-                  {label}
+                  {item.label}
                 </span>
 
               </Link>
@@ -237,6 +252,8 @@ function Shell({ children }) {
           })}
 
         </nav>
+
+        {/* LOGOUT */}
 
         <button
           type="button"
@@ -249,9 +266,13 @@ function Shell({ children }) {
 
       </aside>
 
-      {/* MAIN */}
+      {/* ===================================================
+          MAIN
+      =================================================== */}
 
       <div className="main">
+
+        {/* HEADER */}
 
         <header>
 
@@ -262,7 +283,11 @@ function Shell({ children }) {
               className="hamb"
               aria-label="Toggle navigation"
               aria-expanded={open}
-              onClick={() => setOpen((value) => !value)}
+              onClick={() => {
+                setOpen(
+                  (value) => !value
+                );
+              }}
             >
               ☰
             </button>
@@ -280,7 +305,10 @@ function Shell({ children }) {
               </b>
 
               <small>
-                {String(user.role || "ADMIN").toLowerCase()}
+                {String(
+                  user.role ||
+                    "ADMIN"
+                ).toLowerCase()}
               </small>
 
             </div>
@@ -301,6 +329,8 @@ function Shell({ children }) {
 
         </header>
 
+        {/* PAGE CONTENT */}
+
         <main>
           {children}
         </main>
@@ -312,11 +342,10 @@ function Shell({ children }) {
 }
 
 /* =========================================================
-   PROTECTED MANAGEMENT ROUTES
+   PROTECTED PAGE WRAPPER
 ========================================================= */
 
-function Protected() {
-
+function ProtectedPage({ children }) {
   if (!isLoggedIn()) {
     return (
       <Navigate
@@ -327,78 +356,14 @@ function Protected() {
   }
 
   return (
-    <Shell>
-
-      <Routes>
-
-        <Route
-          path="/dashboard"
-          element={<Dashboard />}
-        />
-
-        <Route
-          path="/students"
-          element={<Students />}
-        />
-
-        <Route
-          path="/teachers"
-          element={<Teachers />}
-        />
-
-        <Route
-          path="/academics"
-          element={<Academics />}
-        />
-
-        <Route
-          path="/finance"
-          element={<Finance />}
-        />
-
-        <Route
-          path="/madrasa"
-          element={<Madrasa />}
-        />
-
-        <Route
-          path="/timetable"
-          element={<Timetable />}
-        />
-
-        <Route
-          path="/reports"
-          element={<Reports />}
-        />
-
-        <Route
-          path="/activity"
-          element={<Activity />}
-        />
-
-        <Route
-          path="/settings"
-          element={<Settings />}
-        />
-
-        <Route
-          path="*"
-          element={
-            <Navigate
-              to="/dashboard"
-              replace
-            />
-          }
-        />
-
-      </Routes>
-
-    </Shell>
+    <ManagementLayout>
+      {children}
+    </ManagementLayout>
   );
 }
 
 /* =========================================================
-   MAIN ROUTER
+   APP
 ========================================================= */
 
 export default function App() {
@@ -406,9 +371,9 @@ export default function App() {
   return (
     <Routes>
 
-      {/* =====================================================
-          PUBLIC PAGES
-      ===================================================== */}
+      {/* ===================================================
+          PUBLIC WEBSITE
+      =================================================== */}
 
       <Route
         path="/"
@@ -421,7 +386,7 @@ export default function App() {
       />
 
       <Route
-        path="/academics"
+        path="/academic-programs"
         element={<AcademicsPublic />}
       />
 
@@ -431,7 +396,7 @@ export default function App() {
       />
 
       <Route
-        path="/madrasa"
+        path="/madrasa-info"
         element={<MadrasaPublic />}
       />
 
@@ -439,6 +404,10 @@ export default function App() {
         path="/contact"
         element={<Contact />}
       />
+
+      {/* ===================================================
+          AUTH
+      =================================================== */}
 
       <Route
         path="/login"
@@ -450,63 +419,103 @@ export default function App() {
         element={<Register />}
       />
 
-      {/* =====================================================
-          PROTECTED MANAGEMENT
-      ===================================================== */}
+      {/* ===================================================
+          MANAGEMENT
+      =================================================== */}
 
       <Route
-        path="/dashboard/*"
-        element={<Protected />}
+        path="/dashboard"
+        element={
+          <ProtectedPage>
+            <Dashboard />
+          </ProtectedPage>
+        }
       />
 
       <Route
-        path="/students/*"
-        element={<Protected />}
+        path="/students"
+        element={
+          <ProtectedPage>
+            <Students />
+          </ProtectedPage>
+        }
       />
 
       <Route
-        path="/teachers/*"
-        element={<Protected />}
+        path="/teachers"
+        element={
+          <ProtectedPage>
+            <Teachers />
+          </ProtectedPage>
+        }
       />
 
       <Route
-        path="/academics/*"
-        element={<Protected />}
+        path="/academics"
+        element={
+          <ProtectedPage>
+            <Academics />
+          </ProtectedPage>
+        }
       />
 
       <Route
-        path="/finance/*"
-        element={<Protected />}
+        path="/finance"
+        element={
+          <ProtectedPage>
+            <Finance />
+          </ProtectedPage>
+        }
       />
 
       <Route
-        path="/madrasa/*"
-        element={<Protected />}
+        path="/madrasa"
+        element={
+          <ProtectedPage>
+            <Madrasa />
+          </ProtectedPage>
+        }
       />
 
       <Route
-        path="/timetable/*"
-        element={<Protected />}
+        path="/timetable"
+        element={
+          <ProtectedPage>
+            <Timetable />
+          </ProtectedPage>
+        }
       />
 
       <Route
-        path="/reports/*"
-        element={<Protected />}
+        path="/reports"
+        element={
+          <ProtectedPage>
+            <Reports />
+          </ProtectedPage>
+        }
       />
 
       <Route
-        path="/activity/*"
-        element={<Protected />}
+        path="/activity"
+        element={
+          <ProtectedPage>
+            <Activity />
+          </ProtectedPage>
+        }
       />
 
       <Route
-        path="/settings/*"
-        element={<Protected />}
+        path="/settings"
+        element={
+          <ProtectedPage>
+            <Settings />
+          </ProtectedPage>
+        }
       />
 
-      {/* =====================================================
-          GLOBAL FALLBACK
-      ===================================================== */}
+      {/* ===================================================
+          FALLBACK
+      =================================================== */}
 
       <Route
         path="*"

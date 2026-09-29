@@ -1,32 +1,37 @@
 import os
+
 from dotenv import load_dotenv
 
 load_dotenv()
 
 
 class Config:
-    """Base configuration built from environment variables."""
 
-    # ---------------------------------------------------------
+    # =====================================================
     # APPLICATION
-    # ---------------------------------------------------------
+    # =====================================================
+
     SECRET_KEY = os.environ.get(
         "SECRET_KEY",
-        "change-this-secret"
+        "nia-school-secret-key"
     )
 
     JWT_SECRET_KEY = os.environ.get(
         "JWT_SECRET_KEY",
-        "change-this-jwt-secret"
+        "nia-school-jwt-secret-key"
     )
 
     JWT_EXPIRY_HOURS = int(
-        os.environ.get("JWT_EXPIRY_HOURS", "12")
+        os.environ.get(
+            "JWT_EXPIRY_HOURS",
+            "12"
+        )
     )
 
-    # ---------------------------------------------------------
+    # =====================================================
     # DATABASE
-    # ---------------------------------------------------------
+    # =====================================================
+
     DB_HOST = os.environ.get(
         "DB_HOST",
         "127.0.0.1"
@@ -53,7 +58,7 @@ class Config:
     )
 
     SQLALCHEMY_DATABASE_URI = (
-        f"mysql+pymysql://"
+        "mysql+pymysql://"
         f"{DB_USER}:{DB_PASSWORD}"
         f"@{DB_HOST}:{DB_PORT}/{DB_NAME}"
     )
@@ -65,22 +70,10 @@ class Config:
         "pool_recycle": 280,
     }
 
-    # ---------------------------------------------------------
+    # =====================================================
     # CORS
-    # ---------------------------------------------------------
-    # Origins provided through .env
-    env_origins = os.environ.get(
-        "CORS_ORIGINS",
-        ""
-    )
+    # =====================================================
 
-    env_origins = [
-        origin.strip()
-        for origin in env_origins.split(",")
-        if origin.strip()
-    ]
-
-    # Default origins for local development
     default_origins = [
         "http://localhost:5173",
         "http://localhost:5174",
@@ -88,23 +81,36 @@ class Config:
         "http://127.0.0.1:5174",
     ]
 
-    # Add environment origins without duplicates
-    CORS_ORIGINS = list(
-        dict.fromkeys(
-            default_origins + env_origins
-        )
+    env_origins = os.environ.get(
+        "CORS_ORIGINS",
+        ""
     )
 
-    # ---------------------------------------------------------
+    if env_origins:
+        default_origins.extend(
+            origin.strip()
+            for origin in env_origins.split(",")
+            if origin.strip()
+        )
+
+    CORS_ORIGINS = list(
+        dict.fromkeys(default_origins)
+    )
+
+    # =====================================================
     # SERVER
-    # ---------------------------------------------------------
+    # =====================================================
+
     HOST = os.environ.get(
         "HOST",
         "0.0.0.0"
     )
 
     PORT = int(
-        os.environ.get("PORT", "5000")
+        os.environ.get(
+            "PORT",
+            "6001"
+        )
     )
 
     FLASK_ENV = os.environ.get(
