@@ -57,10 +57,14 @@ class Config:
         ""
     )
 
-    SQLALCHEMY_DATABASE_URI = (
-        "mysql+pymysql://"
-        f"{DB_USER}:{DB_PASSWORD}"
-        f"@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+    from sqlalchemy.engine import URL
+    SQLALCHEMY_DATABASE_URI = URL.create(
+        "mysql+pymysql",
+        username=DB_USER,
+        password=DB_PASSWORD,
+        host=DB_HOST,
+        port=int(DB_PORT),
+        database=DB_NAME,
     )
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
@@ -68,6 +72,17 @@ class Config:
     SQLALCHEMY_ENGINE_OPTIONS = {
         "pool_pre_ping": True,
         "pool_recycle": 280,
+        "pool_size": 5,
+        "max_overflow": 15,
+        "pool_timeout": 30,
+        "pool_use_lifo": True,
+        "connect_args": {
+            "connect_timeout": 10,
+            "ssl": {"ca": os.environ.get(
+                "TIDB_CA_PATH",
+                str(__import__("pathlib").Path(__file__).parent / "certs" / "tidb-ca.pem")
+            )},
+        },
     }
 
     # =====================================================

@@ -5,3 +5,8 @@ venv/
 .venv/
 instance/
 *.log
+.env.*
+!.env.example
+backups/
+*.backup
+*.bak
