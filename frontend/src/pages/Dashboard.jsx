@@ -34,7 +34,7 @@ function SectionTitle({ title, subtitle, action }) {
 function EmptyState({ message = "No records found." }) {
   return (
     <div className="dashboard-empty">
-      <div className="empty-icon">📭</div>
+      <div className="empty-icon"></div>
       <p>{message}</p>
     </div>
   );
@@ -121,9 +121,8 @@ export default function Dashboard() {
     localStorage.getItem("nia_user") || "{}"
   );
 
-  const loadDashboard = async () => {
+  const loadDashboard = async (initial = false) => {
     try {
-      setLoading(true);
       setError("");
 
       const response = await api.get("/dashboard/admin");
@@ -143,7 +142,11 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
-    loadDashboard();
+    loadDashboard(true);
+    const timer = setInterval(() => {
+      if (document.visibilityState === "visible") loadDashboard(false);
+    }, 10000);
+    return () => clearInterval(timer);
   }, []);
 
   const goTo = (path) => {
@@ -172,7 +175,7 @@ export default function Dashboard() {
         subtitle="School management overview"
       >
         <div className="dashboard-error">
-          <div className="error-icon">⚠️</div>
+          <div className="error-icon"></div>
 
           <h3>Unable to load dashboard</h3>
 
@@ -183,7 +186,7 @@ export default function Dashboard() {
             className="dashboard-primary-btn"
             onClick={loadDashboard}
           >
-            🔄 Try Again
+             Try Again
           </button>
         </div>
       </Page>
@@ -283,7 +286,7 @@ export default function Dashboard() {
             className="dashboard-refresh-btn"
             onClick={loadDashboard}
           >
-            🔄 Refresh
+             Refresh
           </button>
         </div>
       }
@@ -323,7 +326,7 @@ export default function Dashboard() {
       ========================================================== */}
       <div className="dashboard-stats">
         <StatCard
-          icon="👨‍🎓"
+          icon=""
           title="Total Students"
           value={formatNumber(totalStudents)}
           subtitle={`${formatNumber(activeStudents)} active students`}
@@ -331,7 +334,7 @@ export default function Dashboard() {
         />
 
         <StatCard
-          icon="👨‍🏫"
+          icon=""
           title="Teachers"
           value={formatNumber(teachers)}
           subtitle="Teaching staff"
@@ -339,7 +342,7 @@ export default function Dashboard() {
         />
 
         <StatCard
-          icon="🏫"
+          icon=""
           title="Classes"
           value={formatNumber(classes)}
           subtitle={`${formatNumber(subjects)} subjects`}
@@ -347,7 +350,7 @@ export default function Dashboard() {
         />
 
         <StatCard
-          icon="📅"
+          icon=""
           title="Today's Attendance"
           value={`${attendancePercentage}%`}
           subtitle={`${formatNumber(attendancePresent)} present`}
@@ -355,7 +358,7 @@ export default function Dashboard() {
         />
 
         <StatCard
-          icon="💰"
+          icon=""
           title="Fees Collected"
           value={formatMoney(collected)}
           subtitle={`${feeCollectionPercentage}% collected`}
@@ -363,7 +366,7 @@ export default function Dashboard() {
         />
 
         <StatCard
-          icon="⚠️"
+          icon=""
           title="Outstanding Fees"
           value={formatMoney(outstanding)}
           subtitle="Pending collection"
@@ -371,7 +374,7 @@ export default function Dashboard() {
         />
 
         <StatCard
-          icon="📚"
+          icon=""
           title="Academic Average"
           value={
             academicAverage
@@ -383,7 +386,7 @@ export default function Dashboard() {
         />
 
         <StatCard
-          icon="☪️"
+          icon=""
           title="Madrasa Students"
           value={formatNumber(madrasaStudents)}
           subtitle={`${formatNumber(madrasaPresent)} present today`}
@@ -405,7 +408,7 @@ export default function Dashboard() {
             type="button"
             onClick={() => goTo("/students")}
           >
-            <span className="quick-action-icon">👨‍🎓</span>
+            <span className="quick-action-icon"></span>
             <span>
               <strong>Add Student</strong>
               <small>Register a new student</small>
@@ -417,7 +420,7 @@ export default function Dashboard() {
             type="button"
             onClick={() => goTo("/teachers")}
           >
-            <span className="quick-action-icon">👨‍🏫</span>
+            <span className="quick-action-icon"></span>
             <span>
               <strong>Add Teacher</strong>
               <small>Register teaching staff</small>
@@ -429,7 +432,7 @@ export default function Dashboard() {
             type="button"
             onClick={() => goTo("/finance")}
           >
-            <span className="quick-action-icon">💰</span>
+            <span className="quick-action-icon"></span>
             <span>
               <strong>Record Payment</strong>
               <small>Record student fees</small>
@@ -439,9 +442,9 @@ export default function Dashboard() {
 
           <button
             type="button"
-            onClick={() => goTo("/academics")}
+            onClick={() => goTo("/academics?tab=attendance")}
           >
-            <span className="quick-action-icon">📋</span>
+            <span className="quick-action-icon"></span>
             <span>
               <strong>Attendance</strong>
               <small>Record daily attendance</small>
@@ -451,9 +454,9 @@ export default function Dashboard() {
 
           <button
             type="button"
-            onClick={() => goTo("/academics")}
+            onClick={() => goTo("/academics?tab=exams")}
           >
-            <span className="quick-action-icon">📝</span>
+            <span className="quick-action-icon"></span>
             <span>
               <strong>Add Exam</strong>
               <small>Create an examination</small>
@@ -463,9 +466,9 @@ export default function Dashboard() {
 
           <button
             type="button"
-            onClick={() => goTo("/academics")}
+            onClick={() => goTo("/academics?tab=results")}
           >
-            <span className="quick-action-icon">📊</span>
+            <span className="quick-action-icon"></span>
             <span>
               <strong>Add Result</strong>
               <small>Enter student results</small>
@@ -746,7 +749,7 @@ export default function Dashboard() {
 
         <div className="madrasa-dashboard">
           <div className="madrasa-stat">
-            <div className="madrasa-icon">☪️</div>
+            <div className="madrasa-icon"></div>
 
             <div>
               <span>Total Students</span>
@@ -757,7 +760,7 @@ export default function Dashboard() {
           </div>
 
           <div className="madrasa-stat">
-            <div className="madrasa-icon">📅</div>
+            <div className="madrasa-icon"></div>
 
             <div>
               <span>Present Today</span>
@@ -768,7 +771,7 @@ export default function Dashboard() {
           </div>
 
           <div className="madrasa-stat">
-            <div className="madrasa-icon">📚</div>
+            <div className="madrasa-icon"></div>
 
             <div>
               <span>Classes</span>
@@ -783,7 +786,7 @@ export default function Dashboard() {
           </div>
 
           <div className="madrasa-stat">
-            <div className="madrasa-icon">👨‍🏫</div>
+            <div className="madrasa-icon"></div>
 
             <div>
               <span>Teachers</span>
@@ -936,7 +939,7 @@ export default function Dashboard() {
                     key={payment.id ?? index}
                   >
                     <div className="recent-avatar payment-avatar">
-                      💰
+
                     </div>
 
                     <div className="recent-content">
@@ -1041,7 +1044,7 @@ export default function Dashboard() {
           type="button"
           onClick={() => goTo("/reports")}
         >
-          <span>📊</span>
+          <span></span>
           <div>
             <strong>Generate Reports</strong>
             <small>View school reports and statistics</small>
@@ -1053,7 +1056,7 @@ export default function Dashboard() {
           type="button"
           onClick={() => goTo("/timetable")}
         >
-          <span>🗓️</span>
+          <span></span>
           <div>
             <strong>Manage Timetable</strong>
             <small>View and manage class schedules</small>
@@ -1065,7 +1068,7 @@ export default function Dashboard() {
           type="button"
           onClick={() => goTo("/settings")}
         >
-          <span>⚙️</span>
+          <span></span>
           <div>
             <strong>System Settings</strong>
             <small>Configure NIA system</small>

@@ -13,9 +13,32 @@ const api = axios.create({
   },
 });
 
+// =============================================================
+// TOKEN STORAGE HELPERS - hupata token kutoka mahali popote
+// =============================================================
+
+function getStoredToken() {
+  return (
+    localStorage.getItem("nia_token") ||
+    sessionStorage.getItem("nia_token") ||
+    null
+  );
+}
+
+export function clearStoredAuth() {
+  ["nia_token", "nia_user", "nia_logged_in"].forEach((key) => {
+    localStorage.removeItem(key);
+    sessionStorage.removeItem(key);
+  });
+}
+
+// =============================================================
+// REQUEST INTERCEPTOR - kuweka Authorization kwenye kila request
+// =============================================================
+
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("nia_token");
+    const token = getStoredToken();
 
     if (token) {
       config.headers.Authorization = token.startsWith("Bearer ")
@@ -28,6 +51,10 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+// =============================================================
+// RESPONSE INTERCEPTOR - kushughulikia 401 (token expired/invalid)
+// =============================================================
+
 api.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -36,6 +63,11 @@ api.interceptors.response.use(
         "AUTHENTICATION ERROR:",
         error.response?.data || "Authentication failed"
       );
+      clearStoredAuth();
+      // Elekeza kwenye login kama bado haupo
+      if (!window.location.pathname.startsWith("/login")) {
+        window.location.href = "/login";
+      }
     }
 
     return Promise.reject(error);

@@ -1214,78 +1214,85 @@ export default function Finance() {
         </title>
 
         <style>
+          * { box-sizing: border-box; }
           body {
             font-family: Arial, sans-serif;
-            padding: 40px;
+            padding: 24px;
             color: #222;
             background: #fff;
           }
-
           .receipt {
-            max-width: 700px;
+            max-width: 760px;
             margin: auto;
-            border: 1px solid #ddd;
-            padding: 35px;
+            border: 2px solid #168f9b;
+            border-radius: 8px;
+            padding: 28px;
           }
-
           .header {
-            text-align: center;
-            border-bottom: 2px solid #222;
-            padding-bottom: 20px;
-            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            border-bottom: 3px solid #168f9b;
+            padding-bottom: 18px;
+            margin-bottom: 20px;
           }
-
+          .school-logo {
+            width: 95px;
+            height: 95px;
+            object-fit: contain;
+          }
+          .school-heading { text-align: center; }
           .header h1 {
-            margin: 0;
-            font-size: 28px;
+            margin: 0 0 8px;
+            font-size: 25px;
+            color: #147b86;
           }
-
-          .header p {
-            margin: 5px 0;
-          }
-
+          .header p { margin: 4px 0; }
           .receipt-title {
             text-align: center;
-            font-size: 22px;
+            font-size: 21px;
             font-weight: bold;
-            margin: 20px 0;
+            margin: 18px 0;
+            letter-spacing: 2px;
           }
-
-          table {
-            width: 100%;
-            border-collapse: collapse;
-          }
-
+          table { width: 100%; border-collapse: collapse; }
           td {
-            padding: 12px 8px;
-            border-bottom: 1px solid #eee;
+            padding: 10px 8px;
+            border-bottom: 1px solid #e5e7eb;
           }
-
-          td:first-child {
-            font-weight: bold;
-            width: 40%;
+          td:first-child { font-weight: bold; width: 40%; }
+          .amount { font-size: 23px; font-weight: bold; color: #147b86; }
+          .signatures {
+            display: flex;
+            justify-content: space-between;
+            gap: 35px;
+            margin-top: 55px;
           }
-
-          .amount {
-            font-size: 25px;
-            font-weight: bold;
-          }
-
-          .footer {
-            margin-top: 35px;
+          .signature, .stamp {
+            width: 48%;
+            min-height: 100px;
             text-align: center;
-            font-size: 12px;
+          }
+          .signature-line {
+            border-top: 1px solid #222;
+            margin-top: 48px;
+            padding-top: 8px;
+            font-size: 13px;
+          }
+          .stamp-area { display: none; }
+          .footer {
+            margin-top: 28px;
+            padding-top: 12px;
+            border-top: 1px solid #ddd;
+            text-align: center;
+            font-size: 11px;
             color: #666;
           }
-
           @media print {
-            body {
-              padding: 0;
-            }
-
-            .receipt {
-              border: none;
-            }
+            @page { size: A4; margin: 12mm; }
+            body { padding: 0; }
+            .receipt { border: 1px solid #168f9b; padding: 22px; }
           }
         </style>
       </head>
@@ -1294,13 +1301,12 @@ export default function Finance() {
         <div class="receipt">
 
           <div class="header">
-            <h1>
-              NIA SCHOOL & MADRASA
-            </h1>
-
-            <p>
-              Fees Payment Receipt
-            </p>
+            <img class="school-logo" src="/NIA%20SCHOOLS.png" alt="NIA School Logo" />
+            <div class="school-heading">
+              <h1>NIA SCHOOL &amp; MADRASA</h1>
+              <p>Kisauni – Mkunazi Samaki, Zanzibar</p>
+              <p>Fees Payment Receipt</p>
+            </div>
           </div>
 
           <div class="receipt-title">
@@ -1370,6 +1376,15 @@ export default function Finance() {
 
           </table>
 
+          <div class="signatures">
+            <div class="signature">
+              <div class="signature-line">Received by / Signature</div>
+            </div>
+            <div class="stamp">
+              <strong>NIA STAMP</strong>
+            </div>
+          </div>
+
           <div class="footer">
             <p>
               Thank you for your payment.
@@ -1393,6 +1408,120 @@ export default function Finance() {
     `);
 
     receiptWindow.document.close();
+  };
+
+
+  const printFeeStatement = async (studentId) => {
+    const student = students.find(
+      (item) => Number(item.id) === Number(studentId)
+    );
+    if (!student) {
+      alert("Student information not found.");
+      return;
+    }
+
+    let data;
+    try {
+      const response = await api.get(`/payments/student/${studentId}/balance`);
+      data = response?.data?.data ?? response?.data ?? {};
+    } catch {
+      alert("Unable to load student fee balance.");
+      return;
+    }
+
+    const esc = (v) => String(v ?? "—").replace(/[&<>"']/g, c => ({
+      "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;"
+    }[c]));
+
+    const money = (v) => Number(v || 0).toLocaleString("en-TZ", {
+      minimumFractionDigits: 2, maximumFractionDigits: 2
+    });
+
+    const classId = student.schoolClassId ?? student.school_class_id ??
+      student.classId ?? student.class_id;
+
+    const classFees = fees.filter(f =>
+      classId != null &&
+      Number(f.classId ?? f.class_id) === Number(classId)
+    );
+    const isRegistration = f =>
+      /registration|admission/i.test(`${f.feeName || ""} ${f.feeType || ""}`);
+
+    const registration = classFees.filter(isRegistration)
+      .reduce((sum, f) => sum + Number(f.amount || 0), 0);
+    const schoolFees = classFees.filter(f => !isRegistration(f))
+      .reduce((sum, f) => sum + Number(f.amount || 0), 0);
+
+    const totalFees = Number(data.total_fees ?? data.totalFees ?? registration + schoolFees);
+    const totalPaid = Number(data.total_paid ?? data.totalPaid ?? 0);
+    const balance = Number(data.balance ?? totalFees - totalPaid);
+
+    const history = payments
+      .filter(p => Number(p.studentId ?? p.student_id) === Number(studentId))
+      .sort((a, b) => String(a.paymentDate ?? a.payment_date ?? "")
+        .localeCompare(String(b.paymentDate ?? b.payment_date ?? "")));
+
+    const rows = history.map((p, i) => {
+      const fee = fees.find(f => Number(f.id) === Number(p.feeStructureId ?? p.fee_structure_id));
+      const method = p.paymentMethod ?? p.payment_method ?? "—";
+      return `<tr>
+        <td>${i + 1}</td>
+        <td>${esc(p.paymentDate ?? p.payment_date)}</td>
+        <td>${esc(p.receiptNo ?? p.receipt_no ?? getReceiptNumber(p))}</td>
+        <td>${esc(fee?.feeName || fee?.feeType || "School fees")}</td>
+        <td>${esc(METHOD_LABELS[method] || method)}</td>
+        <td>${esc(p.referenceNumber ?? p.reference_number)}</td>
+        <td class="num">${money(p.amount)}</td>
+      </tr>`;
+    }).join("");
+
+    const w = window.open("", "_blank", "width=1000,height=750");
+    if (!w) {
+      alert("Allow pop-ups to print the fee statement.");
+      return;
+    }
+
+    w.document.write(`<!doctype html><html><head><meta charset="utf-8">
+      <title>Student Fee Statement</title>
+      <style>
+        @page{size:A4;margin:14mm}body{font:12px Arial;color:#222}
+        header{text-align:center;border-bottom:2px solid #168b9b;padding-bottom:12px}
+        .logo{max-width:85px;max-height:75px}h1{font-size:22px;margin:6px}
+        h2{text-align:center;margin:22px 0}.details,.totals{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0}
+        .totals{grid-template-columns:repeat(4,1fr)}.box{border:1px solid #bbb;padding:10px}
+        .box span{display:block;color:#555;margin-bottom:7px}.box strong{font-size:13px}
+        table{width:100%;border-collapse:collapse;margin-top:10px}th,td{border:1px solid #bbb;padding:7px 5px;text-align:left}
+        th{background:#eaf4f5}.num{text-align:right;white-space:nowrap}
+        .signatures{display:flex;justify-content:space-between;margin-top:55px}
+        .sign{width:42%;border-top:1px solid #333;text-align:center;padding-top:8px}
+        .stamp { margin: 22px auto; text-align: center; font-weight: bold; color: #555; }
+        footer{text-align:center;margin-top:18px;color:#555}
+      </style></head><body>
+      <header><img class="logo" src="/NIA%20SCHOOLS.png" onerror="this.style.display='none'">
+      <h1>NIA SCHOOL &amp; MADRASA</h1><div>Kisauni – Mkunazi Samaki, Zanzibar</div></header>
+      <h2>STUDENT FEE STATEMENT</h2>
+      <div class="details">
+        <div><b>Student:</b> ${esc(getStudentName(student))}</div>
+        <div><b>Admission No:</b> ${esc(student.admissionNo ?? student.admission_no)}</div>
+        <div><b>Class:</b> ${esc(student.className ?? student.class_name ?? "—")}</div>
+        <div><b>Statement Date:</b> ${new Date().toLocaleDateString()}</div>
+      </div>
+      <div class="totals">
+        <div class="box"><span>Registration Fee</span><strong>TZS ${money(registration)}</strong></div>
+        <div class="box"><span>School Fees</span><strong>TZS ${money(schoolFees)}</strong></div>
+        <div class="box"><span>Total Fees</span><strong>TZS ${money(totalFees)}</strong></div>
+        <div class="box"><span>Remaining Balance</span><strong>TZS ${money(balance)}</strong></div>
+      </div>
+      <p><b>Total Paid: TZS ${money(totalPaid)}</b></p>
+      <h3>Payment History</h3>
+      <table><thead><tr><th>#</th><th>Date</th><th>Receipt No.</th><th>Fee</th>
+      <th>Method</th><th>Reference</th><th>Amount (TZS)</th></tr></thead>
+      <tbody>${rows || '<tr><td colspan="7" style="text-align:center">No payment history found.</td></tr>'}</tbody></table>
+      <div class="signatures"><div class="sign">Authorized Signature</div><div class="sign">Parent / Guardian Signature</div></div>
+      <div class="stamp">NIA STAMP</div>
+      <footer>Generated by NIA School &amp; Madrasa Management System</footer>
+      <script>window.onload=()=>window.print();</script></body></html>`);
+    w.document.close();
   };
 
   /* ===================================================
@@ -1973,6 +2102,14 @@ export default function Finance() {
                   title="Print receipt"
                 >
                   🧾
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => printFeeStatement(row.studentId)}
+                  title="Print fee statement"
+                >
+                  📄
                 </button>
 
                 <button

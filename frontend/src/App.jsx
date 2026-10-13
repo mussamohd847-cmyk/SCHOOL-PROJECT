@@ -32,6 +32,7 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Students from "./pages/Students";
 import Teachers from "./pages/Teachers";
+import TeacherClassAssignment from "./pages/TeacherClassAssignment";
 import Academics from "./pages/Academics";
 import Finance from "./pages/Finance";
 import Madrasa from "./pages/Madrasa";
@@ -39,6 +40,8 @@ import Timetable from "./pages/Timetable";
 import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
 import Activity from "./pages/Activity";
+import StudentPortal from "./pages/portals/StudentPortal";
+import TeacherPortal from "./pages/portals/TeacherPortal";
 
 /* =========================================================
    MENU
@@ -64,6 +67,13 @@ const menu = [
     label: "Teachers",
     icon: "♟",
     path: "/teachers",
+    roles: ["ADMIN"],
+  },
+  {
+    id: "teacher-class-assignments",
+    label: "Teacher Assignment",
+    icon: "♙",
+    path: "/teacher-class-assignments",
     roles: ["ADMIN"],
   },
   {
@@ -103,7 +113,7 @@ const menu = [
   },
   {
     id: "activity",
-    label: "Activity Log",
+    label: "Account Management",
     icon: "◉",
     path: "/activity",
     roles: ["ADMIN"],
@@ -123,39 +133,30 @@ const menu = [
 
 function isLoggedIn() {
   return Boolean(
-    localStorage.getItem("nia_token")
+    localStorage.getItem("nia_token") ||
+    sessionStorage.getItem("nia_token")
   );
 }
 
 function getCurrentUser() {
   try {
     const storedUser =
-      localStorage.getItem("nia_user");
+      localStorage.getItem("nia_user") ||
+      sessionStorage.getItem("nia_user");
 
-    if (!storedUser) {
-      return {
-        id: 1,
-        username: "admin",
-        name: "NIA Administrator",
-        role: "ADMIN",
-      };
-    }
+    if (!storedUser) return null;
 
     const user = JSON.parse(storedUser);
+    if (!user || !user.role) return null;
 
     return {
       ...user,
-      role: String(
-        user.role || "ADMIN"
-      ).toUpperCase(),
+      role: String(user.role).trim().toUpperCase() === "STUDENT"
+        ? "PUPIL"
+        : String(user.role).trim().toUpperCase(),
     };
   } catch {
-    return {
-      id: 1,
-      username: "admin",
-      name: "NIA Administrator",
-      role: "ADMIN",
-    };
+    return null;
   }
 }
 
@@ -171,13 +172,16 @@ function ManagementLayout({ children }) {
   const user = getCurrentUser();
 
   const allowedMenu = menu.filter((item) =>
-    item.roles.includes(user.role)
+    user && item.roles.includes(user.role)
   );
 
   const logout = () => {
     localStorage.removeItem("nia_token");
     localStorage.removeItem("nia_user");
     localStorage.removeItem("nia_logged_in");
+    sessionStorage.removeItem("nia_token");
+    sessionStorage.removeItem("nia_user");
+    sessionStorage.removeItem("nia_logged_in");
 
     window.location.href = "/login";
   };
@@ -345,21 +349,27 @@ function ManagementLayout({ children }) {
    PROTECTED PAGE WRAPPER
 ========================================================= */
 
-function ProtectedPage({ children }) {
-  if (!isLoggedIn()) {
-    return (
-      <Navigate
-        to="/login"
-        replace
-      />
-    );
+function ProtectedPage({ children, roles }) {
+  const user = getCurrentUser();
+
+  if (!isLoggedIn() || !user) {
+    return <Navigate to="/login" replace />;
   }
 
-  return (
-    <ManagementLayout>
-      {children}
-    </ManagementLayout>
-  );
+  const roleHome = {
+    ADMIN: "/dashboard",
+    ACCOUNTANT: "/finance",
+    TEACHER: "/teacher/dashboard",
+    PUPIL: "/student/dashboard",
+  };
+
+  const home = roleHome[user.role] || "/login";
+
+  if (roles && !roles.includes(user.role)) {
+    return <Navigate to={home} replace />;
+  }
+
+  return <ManagementLayout>{children}</ManagementLayout>;
 }
 
 /* =========================================================
@@ -420,13 +430,35 @@ export default function App() {
       />
 
       {/* ===================================================
+          STUDENT AND TEACHER PORTALS
+      =================================================== */}
+
+      <Route
+        path="/student/dashboard"
+        element={
+          isLoggedIn() && getCurrentUser()?.role === "PUPIL"
+            ? <StudentPortal />
+            : <Navigate to="/login" replace />
+        }
+      />
+
+      <Route
+        path="/teacher/dashboard"
+        element={
+          isLoggedIn() && getCurrentUser()?.role === "TEACHER"
+            ? <TeacherPortal />
+            : <Navigate to="/login" replace />
+        }
+      />
+
+      {/* ===================================================
           MANAGEMENT
       =================================================== */}
 
       <Route
         path="/dashboard"
         element={
-          <ProtectedPage>
+          <ProtectedPage roles={["ADMIN"]}>
             <Dashboard />
           </ProtectedPage>
         }
@@ -435,7 +467,7 @@ export default function App() {
       <Route
         path="/students"
         element={
-          <ProtectedPage>
+          <ProtectedPage roles={["ADMIN", "ACCOUNTANT", "TEACHER"]}>
             <Students />
           </ProtectedPage>
         }
@@ -444,8 +476,17 @@ export default function App() {
       <Route
         path="/teachers"
         element={
-          <ProtectedPage>
+          <ProtectedPage roles={["ADMIN"]}>
             <Teachers />
+          </ProtectedPage>
+        }
+      />
+
+      <Route
+        path="/teacher-class-assignments"
+        element={
+          <ProtectedPage roles={["ADMIN"]}>
+            <TeacherClassAssignment />
           </ProtectedPage>
         }
       />
@@ -453,7 +494,7 @@ export default function App() {
       <Route
         path="/academics"
         element={
-          <ProtectedPage>
+          <ProtectedPage roles={["ADMIN", "TEACHER"]}>
             <Academics />
           </ProtectedPage>
         }
@@ -462,7 +503,7 @@ export default function App() {
       <Route
         path="/finance"
         element={
-          <ProtectedPage>
+          <ProtectedPage roles={["ADMIN", "ACCOUNTANT"]}>
             <Finance />
           </ProtectedPage>
         }
@@ -471,7 +512,7 @@ export default function App() {
       <Route
         path="/madrasa"
         element={
-          <ProtectedPage>
+          <ProtectedPage roles={["ADMIN", "TEACHER"]}>
             <Madrasa />
           </ProtectedPage>
         }
@@ -480,7 +521,7 @@ export default function App() {
       <Route
         path="/timetable"
         element={
-          <ProtectedPage>
+          <ProtectedPage roles={["ADMIN", "TEACHER"]}>
             <Timetable />
           </ProtectedPage>
         }
@@ -489,7 +530,7 @@ export default function App() {
       <Route
         path="/reports"
         element={
-          <ProtectedPage>
+          <ProtectedPage roles={["ADMIN", "ACCOUNTANT", "TEACHER"]}>
             <Reports />
           </ProtectedPage>
         }
@@ -498,7 +539,7 @@ export default function App() {
       <Route
         path="/activity"
         element={
-          <ProtectedPage>
+          <ProtectedPage roles={["ADMIN"]}>
             <Activity />
           </ProtectedPage>
         }
@@ -507,7 +548,7 @@ export default function App() {
       <Route
         path="/settings"
         element={
-          <ProtectedPage>
+          <ProtectedPage roles={["ADMIN"]}>
             <Settings />
           </ProtectedPage>
         }

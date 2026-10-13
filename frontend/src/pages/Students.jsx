@@ -29,6 +29,144 @@ const today = new Date()
 
 const STUDENTS_PER_PAGE = 10;
 
+const reportEscape = (value) =>
+  String(value ?? "").replace(/[&<>"']/g, (ch) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;",
+    '"': "&quot;", "'": "&#39;",
+  })[ch]);
+
+const printStudentReport = async (
+  row, studentName, schoolClass, madrasaClass
+) => {
+  const win = window.open("", "_blank");
+  if (!win) {
+    window.alert("Ruhusu pop-ups ili kuchapisha ripoti.");
+    return;
+  }
+
+  win.document.write("<p style='font-family:Arial;padding:24px'>Inapakia ripoti...</p>");
+
+  try {
+    const response = await api.get(
+      `/results/student/${row.id}/report`
+    );
+    const payload = response?.data?.data ?? response?.data?.result ?? response?.data;
+    const student = payload?.student ?? row;
+    const results = Array.isArray(payload?.results) ? payload.results : [];
+
+    const val = (...keys) => {
+      for (const key of keys) {
+        if (student?.[key] !== undefined && student?.[key] !== null) {
+          return student[key];
+        }
+      }
+      return "";
+    };
+
+    const name = [
+      val("firstName", "first_name"),
+      val("middleName", "middle_name"),
+      val("lastName", "last_name"),
+    ].filter(Boolean).join(" ") || studentName || "—";
+
+    const schoolResults = results.filter(
+      r => String(r.subject_category || "").toUpperCase() !== "MADRASA"
+    );
+    const madrasaResults = results.filter(
+      r => String(r.subject_category || "").toUpperCase() === "MADRASA"
+    );
+
+    const number = v => Number(v || 0);
+    const cell = v => reportEscape(v === null || v === undefined || v === "" ? "—" : v);
+
+    const schoolRows = schoolResults.map(r => `
+      <tr>
+        <td>${cell(r.subject_name || r.subject_id)}</td>
+        <td>${cell(r.cw)}</td><td>${cell(r.hw)}</td>
+        <td>${cell(r.ct)}</td><td>${cell(r.fe)}</td>
+        <td>${cell(r.total)}</td><td>${cell(r.grade)}</td><td></td>
+      </tr>`).join("");
+
+    const madrasaRows = madrasaResults.map(r => `
+      <tr>
+        <td>${cell(r.subject_name || r.subject_id)}</td>
+        <td>${cell(r.total)}</td><td>${cell(r.grade)}</td><td></td>
+      </tr>`).join("");
+
+    const sum = key => schoolResults.reduce((total, r) => total + number(r[key]), 0);
+    const totalMarks = sum("total");
+    const average = schoolResults.length
+      ? (totalMarks / schoolResults.length).toFixed(2)
+      : "—";
+
+    const examNames = [...new Set(results.map(r =>
+      [r.exam_name, r.exam_type].filter(Boolean).join(" — ")
+    ).filter(Boolean))].join(", ") || "—";
+
+    const html = `<!doctype html>
+<html><head><meta charset="utf-8"><title>Student Report</title>
+<style>
+@page{size:A4 landscape;margin:9mm}
+*{box-sizing:border-box}
+body{font:11px Arial,sans-serif;color:#172b4d;margin:0}
+.top{border-top:7px solid #1684c5;border-bottom:2px solid #1684c5;padding:10px;text-align:center}
+h1{font-size:21px;margin:2px}h2{font-size:14px;margin:8px 0}
+.meta{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin:12px 0}
+.meta div{border:1px solid #ccd6e0;padding:7px}
+table{width:100%;border-collapse:collapse;margin:6px 0 12px}
+th,td{border:1px solid #aebdca;padding:6px;text-align:center}
+th{background:#eaf3f9}td:first-child,th:first-child{text-align:left}
+.summary{font-weight:bold;background:#f0f5f8}
+.comments{display:grid;grid-template-columns:1fr 1fr;gap:25px;margin-top:15px}
+.signature{margin-top:28px;border-top:1px solid #444;padding-top:5px}
+.bottom{border-bottom:5px solid #1684c5;margin-top:22px}
+@media print{button{display:none}}
+</style></head><body>
+<div class="top"><h1>NIMBLE INTEGRATED ACADEMY</h1>
+<div>STUDENT ACADEMIC REPORT</div></div>
+<div class="meta">
+<div><b>Student:</b> ${cell(name)}</div>
+<div><b>Admission No.:</b> ${cell(val("admissionNo", "admission_no"))}</div>
+<div><b>Gender:</b> ${cell(val("gender"))}</div>
+<div><b>School Class:</b> ${cell(schoolClass || "—")}</div>
+<div><b>Madrasa Class:</b> ${cell(madrasaClass || "—")}</div>
+<div><b>Exam:</b> ${cell(examNames)}</div>
+</div>
+<h2>School Results</h2>
+<table><thead><tr><th>Subject</th><th>Class Work</th><th>Homework</th>
+<th>Test</th><th>Exam</th><th>Total</th><th>Grade</th><th>Remarks</th></tr></thead>
+<tbody>${schoolRows || '<tr><td colspan="8">No school results recorded</td></tr>'}
+<tr class="summary"><td>TOTAL</td><td>${sum("cw").toFixed(2)}</td>
+<td>${sum("hw").toFixed(2)}</td><td>${sum("ct").toFixed(2)}</td>
+<td>${sum("fe").toFixed(2)}</td><td>${totalMarks.toFixed(2)}</td><td>—</td><td></td></tr>
+<tr class="summary"><td colspan="5">AVERAGE</td><td>${average}</td><td>—</td><td></td></tr>
+</tbody></table>
+<h2>Madrasa Results</h2>
+<table><thead><tr><th>Subject</th><th>Marks</th><th>Grade</th><th>Remarks</th></tr></thead>
+<tbody>${madrasaRows || '<tr><td colspan="4">No Madrasa results recorded</td></tr>'}</tbody></table>
+<div class="comments">
+<div>Class Teacher's Comments: ______________________________
+<div class="signature">Class Teacher's Signature</div></div>
+<div>Head Teacher's Comments: ______________________________
+<div class="signature">Head Teacher's Signature / School Stamp</div></div>
+</div>
+<div class="bottom"></div>
+</body></html>`;
+
+    win.document.open();
+    win.document.write(html);
+    win.document.close();
+    win.focus();
+    win.setTimeout(() => win.print(), 500);
+  } catch (error) {
+    win.close();
+    window.alert(
+      error?.response?.data?.message || "Imeshindikana kupata ripoti ya mwanafunzi."
+    );
+  }
+};
+
+
 // ==========================================================
 // EMPTY STUDENT FORM
 // ==========================================================
@@ -1182,15 +1320,6 @@ export default function Students() {
     event.preventDefault();
 
     if (
-      !form.admissionNo.trim()
-    ) {
-      alert(
-        "Admission number is required."
-      );
-      return;
-    }
-
-    if (
       !form.firstName.trim()
     ) {
       alert(
@@ -1216,8 +1345,9 @@ export default function Students() {
     }
 
     const payload = {
-      admissionNo:
-        form.admissionNo.trim(),
+      ...(edit ? {
+        admissionNo: form.admissionNo.trim(),
+      } : {}),
 
       firstName:
         form.firstName.trim(),
@@ -3007,6 +3137,20 @@ export default function Students() {
                           >
                             <button
                               className="icon"
+                              title="Print Student Report"
+                              type="button"
+                              onClick={() => printStudentReport(
+                                student,
+                                getStudentName(student),
+                                student.inSchool ? getSchoolDisplay(student) : "",
+                                student.inMadrasa ? getMadrasaDisplay(student) : ""
+                              )}
+                            >
+                              Print
+                            </button>
+
+                            <button
+                              className="icon"
                               title="Edit Student"
                               type="button"
                               onClick={() =>
@@ -3611,25 +3755,21 @@ export default function Students() {
             onSubmit={save}
             className="form-grid"
           >
-            <Field label="Admission No.">
-              <input
-                type="text"
-                value={
-                  form.admissionNo
-                }
-                onChange={(
-                  event
-                ) =>
-                  setForm({
-                    ...form,
-                    admissionNo:
-                      event.target
-                        .value,
-                  })
-                }
-                required
-              />
-            </Field>
+            {edit && (
+              <Field label="Admission No.">
+                <input
+                  type="text"
+                  value={form.admissionNo}
+                  onChange={(event) =>
+                    setForm({
+                      ...form,
+                      admissionNo: event.target.value,
+                    })
+                  }
+                  required
+                />
+              </Field>
+            )}
 
             <Field label="First Name">
               <input

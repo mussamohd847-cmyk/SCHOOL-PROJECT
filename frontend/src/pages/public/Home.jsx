@@ -38,6 +38,18 @@ const schoolValues = [
   },
 ];
 
+const activityPhotos = Object.entries(
+  import.meta.glob("../photo/*.{jpeg,jpg,png,webp}", {
+    eager: true,
+    query: "?url",
+    import: "default",
+  })
+)
+  .map(([path, src]) => ({ path, src }))
+  .sort((a, b) =>
+    a.path.localeCompare(b.path, undefined, { numeric: true, sensitivity: "base" })
+  );
+
 function ArrowIcon() {
   return (
     <svg
@@ -60,10 +72,6 @@ function ArrowIcon() {
 function Home() {
   return (
     <main className="nia-home">
-
-      {/* =====================================================
-          HERO
-      ====================================================== */}
 
       <section className="nia-hero">
         <div className="nia-hero-overlay" />
@@ -139,7 +147,7 @@ function Home() {
               <span>
                 Intentions
               </span>
-             
+
             </h1>
 
             {/* =================================================
@@ -245,190 +253,34 @@ function Home() {
       </section>
 
       {/* =====================================================
-          WELCOME
+          NIA ACTIVITIES GALLERY
       ====================================================== */}
 
-      <section className="nia-section nia-intro">
-
-        <div className="nia-container nia-intro-grid">
-
-          <div className="nia-section-label">
-
-            <span>
-              01
-            </span>
-
-            <p>
-              WELCOME TO NIA
-            </p>
-
-          </div>
-
-          <div className="nia-intro-content">
-
-            <h2>
-              Welcome to
-              <span>
-                {" "}Nimble Integrated Academy.
-              </span>
-            </h2>
-
-            <p className="nia-large-text">
-              Nimble Integrated Academy (NIA) is a school and
-              madrasa committed to providing quality education,
-              strong discipline and good character.
-            </p>
-
-            <p>
-              Our learning environment is designed to help children
-              develop academically, socially and morally. We believe
-              that every learner deserves quality teaching, care,
-              guidance and an opportunity to reach their potential.
-            </p>
-
-            <Link
-              to="/about"
-              className="nia-text-link"
-            >
-              Learn More About NIA
-              <ArrowIcon />
-            </Link>
-
-          </div>
-
-        </div>
-
-      </section>
-
-      {/* =====================================================
-          SCHOOL PROGRAMS
-      ====================================================== */}
-
-      <section className="nia-section nia-programs">
-
+      <section className="nia-section nia-activities">
         <div className="nia-container">
-
-          <div className="nia-heading-row">
-
-            <div>
-
-              <span className="nia-small-label">
-                OUR EDUCATION PROGRAMS
-              </span>
-
-              <h2>
-                Education for
-                <br />
-                <span>
-                  every learner.
-                </span>
-              </h2>
-
-            </div>
-
-            <p>
-              NIA combines academic education with Islamic learning
-              and character development to support the complete
-              growth of every child.
-            </p>
-
+          <div className="nia-activities-heading">
+            <span className="nia-small-label">LIFE AT NIA</span>
+            <h2>Our School Activities</h2>
+            <p>Discover learning, creativity and memorable moments at NIA School & Madrasa.</p>
           </div>
 
-          <div className="nia-program-grid">
-
-            {/* =================================================
-                SCHOOL
-            ================================================== */}
-
-            <article className="nia-program-card nia-school-card">
-
-              <div className="nia-program-image">
-
-                <div className="nia-image-placeholder">
-                  <span>
-                    NIA SCHOOL
-                  </span>
-                </div>
-
-              </div>
-
-              <div className="nia-program-content">
-
-                <span className="nia-card-number">
-                  01
-                </span>
-
-                <h3>
-                  NIA School
-                </h3>
-
-                <p>
-                  Our academic programme provides learners with
-                  knowledge, skills and confidence through structured
-                  teaching and learning from the early years through
-                  primary education.
-                </p>
-
-                <Link
-                  to="/school"
-                  className="nia-card-link"
-                >
-                  Explore School
-                  <ArrowIcon />
-                </Link>
-
-              </div>
-
-            </article>
-
-            {/* =================================================
-                MADRASA
-            ================================================== */}
-
-            <article className="nia-program-card nia-madrasa-card">
-
-              <div className="nia-program-image">
-
-                <div className="nia-image-placeholder nia-madrasa-placeholder">
-                  <span>
-                    NIA MADRASA
-                  </span>
-                </div>
-
-              </div>
-
-              <div className="nia-program-content">
-
-                <span className="nia-card-number">
-                  02
-                </span>
-
-                <h3>
-                  NIA Madrasa
-                </h3>
-
-                <p>
-                  Our Madrasa programme supports Islamic learning,
-                  good manners, discipline, values and spiritual
-                  development alongside academic education.
-                </p>
-
-                <Link
-                  to="/madrasa"
-                  className="nia-card-link"
-                >
-                  Explore Madrasa
-                  <ArrowIcon />
-                </Link>
-
-              </div>
-
-            </article>
-
+          <div className="nia-activities-grid">
+            {activityPhotos.map((photo, index) => (
+              <figure className="nia-activity-item" key={photo.path}>
+                <img
+                  src={photo.src}
+                  alt={`NIA school activity ${index + 1}`}
+                  loading="lazy"
+                  decoding="async"
+                />
+                <figcaption>
+                  <span>ACTIVITY {(index + 1).toString().padStart(2, "0")}</span>
+                  <strong>NIA School & Madrasa</strong>
+                </figcaption>
+              </figure>
+            ))}
           </div>
-
         </div>
-
       </section>
 
       {/* =====================================================
@@ -762,19 +614,19 @@ function Home() {
             </h4>
 
             <p>
-              Kisauni – Mkunazi Samaki
+              P.O.BOX 1213, ZANZIBAR.
             </p>
 
             <p>
-              Zanzibar, Tanzania
+              NIMBLE INTEGRATED ACADEMY (NIA)
             </p>
 
             <p>
-              Phone: +255 XXX XXX XXX
+              Phone: 0658702025 / 0619556080 / 0776601451
             </p>
 
             <p>
-              Email: info@nia.ac.tz
+              Email: niasch2025@gmail.com
             </p>
 
           </div>
@@ -795,7 +647,7 @@ function Home() {
             </p>
 
             <p>
-              Prepared by Mussa Mohd
+
             </p>
 
           </div>

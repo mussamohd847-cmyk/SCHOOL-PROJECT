@@ -293,17 +293,107 @@ export default function Timetable() {
     row.lesson_type ||
     "SCHOOL";
 
+  const printAllTimetables = () => {
+    if (!data.length) {
+      window.alert("No ratiba za kuchapisha.");
+      return;
+    }
+
+    const win = window.open("", "_blank");
+    if (!win) {
+      window.alert("Ruhusu pop-ups ili kuchapisha ratiba.");
+      return;
+    }
+
+    const esc = (v) => String(v ?? "-").replace(/[&<>"']/g, c => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;",
+      '"': "&quot;", "'": "&#39;",
+    }[c]));
+
+    const days = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
+    const sorted = [...data].sort((a, b) => {
+      const dayDiff = days.indexOf(getDay(a).toUpperCase()) - days.indexOf(getDay(b).toUpperCase());
+      return dayDiff || getStart(a).localeCompare(getStart(b));
+    });
+
+    const rows = sorted.map(row => `
+      <tr>
+        <td>${esc(getDay(row))}</td>
+        <td>${esc(getStart(row))} – ${esc(getEnd(row))}</td>
+        <td>${esc(getSubject(row))}</td>
+        <td>${esc(getClass(row))}</td>
+        <td>${esc(getStream(row))}</td>
+        <td>${esc(getTeacher(row))}</td>
+        <td>${esc(row.room || "-")}</td>
+        <td>${esc(getLessonType(row))}</td>
+      </tr>
+    `).join("");
+
+    win.document.open();
+    win.document.write(`<!doctype html>
+<html><head><meta charset="utf-8"><title>NIA - All Timetables</title>
+<style>
+@page{size:A4 landscape;margin:10mm}
+body{font-family:Arial,sans-serif;color:#1d3557;margin:0}
+header{text-align:center;border-top:7px solid #1684c5;border-bottom:2px solid #1684c5;padding:8px}
+.logo{height:65px;max-width:150px;object-fit:contain}
+h1{font-size:21px;margin:5px 0}
+h2{font-size:15px;margin:4px 0 10px}
+.meta{margin:12px 0;font-size:11px}
+table{width:100%;border-collapse:collapse;font-size:10px}
+th,td{border:1px solid #9eafbd;padding:7px;text-align:left}
+th{background:#e7f2f9}
+tbody tr:nth-child(even){background:#f6f9fb}
+footer{margin-top:18px;border-bottom:5px solid #1684c5}
+@media print{button{display:none}}
+</style></head><body>
+<header>
+<img class="logo" src="/NIA%20SCHOOLS.png" alt="NIA Schools Logo">
+<h1>NIMBLE INTEGRATED ACADEMY</h1>
+<h2>ALL TIMETABLES</h2>
+</header>
+<div class="meta">Total timetable periods: ${data.length}</div>
+<table><thead><tr>
+<th>Day</th><th>Time</th><th>Subject</th><th>Class</th>
+<th>Stream</th><th>Teacher</th><th>Room</th><th>Type</th>
+</tr></thead><tbody>${rows}</tbody></table>
+<footer></footer>
+<script>
+window.addEventListener("load", () => {
+  const logo = document.querySelector(".logo");
+  if (logo.complete) setTimeout(() => window.print(), 300);
+  else {
+    logo.onload = () => setTimeout(() => window.print(), 300);
+    logo.onerror = () => setTimeout(() => window.print(), 300);
+  }
+});
+</script>
+</body></html>`);
+    win.document.close();
+  };
+
+
   return (
     <Page
       title="Timetable"
       subtitle="Teacher, subject, class and room scheduling"
       actions={
-        <button
-          className="primary"
-          onClick={openAdd}
-        >
-          + Add Period
-        </button>
+        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+          <button
+            className="primary"
+            type="button"
+            onClick={printAllTimetables}
+          >
+            Print All Timetables
+          </button>
+          <button
+            className="primary"
+            type="button"
+            onClick={openAdd}
+          >
+            + Add Period
+          </button>
+        </div>
       }
     >
       <Card>

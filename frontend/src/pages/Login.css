@@ -354,3 +354,12 @@
   color: #1fa7b3;
   transform: translateX(-2px);
 }
+.nia-remember-me input[type="checkbox"] {
+  width: 16px !important;
+  height: 16px !important;
+  min-width: 16px !important;
+  min-height: 16px !important;
+  padding: 0 !important;
+  margin: 0 8px 0 0 !important;
+  flex: 0 0 16px !important;
+}

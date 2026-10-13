@@ -1,0 +1,320 @@
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import api from "../../services/api";
+import "./TeacherPortal.css";
+
+const today = () => new Date().toISOString().slice(0, 10);
+
+const nameOf = (x) =>
+  x?.name || x?.className || x?.class_name ||
+  x?.subjectName || x?.subject_name || `#${x?.id ?? ""}`;
+
+const idOf = (x) => String(x?.id ?? "");
+
+export default function TeacherPortal() {
+  const navigate = useNavigate();
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
+  const [section, setSection] = useState("overview");
+
+  const [attendance, setAttendance] = useState({
+    class_id: "", student_id: "", date: today(),
+    status: "PRESENT", remarks: "",
+  });
+
+  const [result, setResult] = useState({
+    exam_id: "", student_id: "", total: "",
+  });
+
+  const load = useCallback(async (showLoading = true) => {
+    if (showLoading) setLoading(true);
+    try {
+      const res = await api.get("/portal/teacher/dashboard");
+      setData(res.data?.data || null);
+      setError("");
+    } catch (err) {
+      setError(
+        err.response?.data?.message ||
+        "Imeshindikana kupata taarifa. Hakikisha umeingia kwa akaunti ya mwalimu."
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    load();
+    const timer = setInterval(() => {
+      if (document.visibilityState === "visible") load(false);
+    }, 30000);
+    return () => clearInterval(timer);
+  }, [load]);
+
+  const classes = data?.classes || [];
+  const subjects = data?.subjects || [];
+  const students = data?.students || [];
+  const exams = data?.exams || [];
+  const timetable = data?.timetable || [];
+
+  const attendanceStudents = useMemo(() => {
+    if (!attendance.class_id) return [];
+    return students.filter((s) =>
+      [s.schoolClassId, s.school_class_id, s.madrasaClassId, s.madrasa_class_id]
+        .some((id) => String(id ?? "") === attendance.class_id)
+    );
+  }, [students, attendance.class_id]);
+
+  const selectedExam = exams.find((x) => idOf(x) === result.exam_id);
+
+  const resultStudents = useMemo(() => {
+    if (!selectedExam) return [];
+    return students.filter((s) =>
+      [s.schoolClassId, s.school_class_id, s.madrasaClassId, s.madrasa_class_id]
+        .some((id) => String(id ?? "") === String(selectedExam.class_id ?? selectedExam.classId ?? ""))
+    );
+  }, [students, selectedExam]);
+
+  const logout = () => {
+    ["nia_token", "nia_user", "nia_logged_in"].forEach((k) =>
+      localStorage.removeItem(k)
+    );
+    navigate("/login", { replace: true });
+  };
+
+  const submit = async (e, endpoint, payload, successText, reset) => {
+    e.preventDefault();
+    setError("");
+    setMessage("");
+    setSaving(true);
+    try {
+      await api.post(endpoint, payload);
+      setMessage(successText);
+      if (reset) reset();
+      await load(false);
+    } catch (err) {
+      setError(err.response?.data?.message || "Imeshindikana kuhifadhi taarifa.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading && !data) {
+    return <div className="sp-layout"><aside className="sp-sidebar"><div className="sp-brand"><div className="sp-brand-mark">NIA</div><div><strong>NIA Schools</strong><span>TEACHER PORTAL</span></div></div></aside><main className="sp-main"><header className="sp-topbar"><div><span className="sp-top-kicker">NIMBLE INTEGRATED ACADEMY</span><h1>Teacher Dashboard</h1></div></header><div className="sp-message"><span className="sp-loader" /> Loading Teacher Portal...</div></main></div>;
+  }
+
+  const navItems = [
+    ["overview", "Dashboard", "⌂"],
+    ["attendance", "Attendance", "◷"],
+    ["results", "Results", "▤"],
+    ["timetable", "Timetable", "▦"],
+  ];
+  const sectionTitle = navItems.find((item) => item[0] === section)?.[1] || "Dashboard";
+
+  return (
+    <div className="sp-layout tp-layout">
+      <aside className="sp-sidebar">
+        <div className="sp-brand"><div className="sp-brand-mark">NIA</div><div><strong>NIA Schools</strong><span>TEACHER PORTAL</span></div></div>
+        <div className="sp-profile">
+          <div className="sp-avatar">{(data?.teacher?.name || "T").trim().charAt(0).toUpperCase()}</div>
+          <div className="sp-profile-text"><strong>{data?.teacher?.name || "Teacher Account"}</strong><span>{data?.teacher?.employeeNumber || "Teacher"}</span></div>
+        </div>
+        <span className="sp-nav-caption">TEACHING</span>
+        <nav className="sp-nav" aria-label="Teacher portal navigation">
+          {navItems.map(([key, label, icon]) => (
+            <button key={key} className={section === key ? "active" : ""} onClick={() => { setSection(key); setError(""); setMessage(""); }}>
+              <span className="sp-nav-icon">{icon}</span>{label}
+              {section === key && <span className="sp-nav-active" />}
+            </button>
+          ))}
+        </nav>
+        <div className="sp-sidebar-bottom">
+          <div className="sp-help"><strong>Need help?</strong><p>Contact the school administration for assistance.</p></div>
+          <button className="sp-logout" onClick={logout}><span>↪</span> Sign out</button>
+        </div>
+      </aside>
+      <main className="sp-main">
+        <header className="sp-topbar">
+          <div><span className="sp-top-kicker">NIMBLE INTEGRATED ACADEMY</span><h1>{sectionTitle}</h1></div>
+          <div className="sp-top-actions"><span className="sp-online"><span /> Teacher Account</span><button className="sp-refresh" onClick={() => load()} title="Refresh portal" aria-label="Refresh portal">↻</button></div>
+        </header>
+        <div className="sp-content tp-content">
+
+      {error && <div className="tp-alert tp-alert-error" role="alert">{error}</div>}
+      {message && <div className="tp-alert tp-alert-success" role="status">{message}</div>}
+
+      {!data ? (
+        <div className="tp-panel">
+          Hakuna taarifa zilizopatikana.
+          <button className="tp-btn tp-btn-primary" onClick={() => load()}>Jaribu tena</button>
+        </div>
+      ) : (
+        <>
+          <section className="tp-welcome">
+            <div>
+              <span className="tp-muted">KARIBU</span>
+              <h2>{data.teacher?.name || "Mwalimu"}</h2>
+              <p>Namba ya mwajiriwa: {data.teacher?.employeeNumber || "Haijawekwa"}</p>
+            </div>
+            <div className="tp-date">{today()}</div>
+          </section>
+
+          {section === "overview" && <>
+            <section className="tp-stats">
+              {[
+                ["Madarasa yangu", classes.length],
+                ["Masomo yangu", subjects.length],
+                ["Wanafunzi", students.length],
+                ["Mitihani hai", exams.length],
+              ].map(([label, value]) => (
+                <article className="tp-stat" key={label}>
+                  <span>{label}</span><strong>{value}</strong>
+                </article>
+              ))}
+            </section>
+
+            <div className="tp-columns">
+              <section className="tp-panel">
+                <div className="tp-panel-heading"><h3>Madarasa yangu</h3><span>{classes.length}</span></div>
+                {classes.length ? classes.map((c) => (
+                  <div className="tp-list-row" key={c.id}>
+                    <span className="tp-dot" />{nameOf(c)}
+                  </div>
+                )) : <p className="tp-empty">Bado hujapangiwa darasa.</p>}
+              </section>
+              <section className="tp-panel">
+                <div className="tp-panel-heading"><h3>Masomo yangu</h3><span>{subjects.length}</span></div>
+                {subjects.length ? subjects.map((s) => (
+                  <div className="tp-list-row" key={s.id}>
+                    <span className="tp-dot tp-dot-gold" />{nameOf(s)}
+                  </div>
+                )) : <p className="tp-empty">Bado hujapangiwa somo.</p>}
+              </section>
+            </div>
+
+            <section className="tp-panel">
+              <div className="tp-panel-heading"><h3>Mitihani inayopatikana</h3><span>{exams.length}</span></div>
+              <div className="tp-table-wrap"><table className="tp-table">
+                <thead><tr><th>Mtihani</th><th>Darasa</th><th>Somo</th><th>Tarehe</th><th>Alama zote</th></tr></thead>
+                <tbody>{exams.map((ex) => (
+                  <tr key={ex.id}>
+                    <td>{ex.name || ex.examName || ex.exam_name || `Exam ${ex.id}`}</td>
+                    <td>{nameOf(classes.find((c) => idOf(c) === String(ex.class_id ?? ex.classId)) || { id: ex.class_id ?? ex.classId })}</td>
+                    <td>{nameOf(subjects.find((s) => idOf(s) === String(ex.subject_id ?? ex.subjectId)) || { id: ex.subject_id ?? ex.subjectId })}</td>
+                    <td>{ex.exam_date || ex.examDate || "—"}</td>
+                    <td>{ex.total_marks ?? ex.totalMarks ?? 100}</td>
+                  </tr>
+                ))}{!exams.length && <tr><td colSpan="5" className="tp-empty">Hakuna mitihani hai kwa sasa.</td></tr>}</tbody>
+              </table></div>
+            </section>
+          </>}
+
+          {section === "attendance" && (
+            <section className="tp-panel tp-form-panel">
+              <h3>Kurekodi mahudhurio</h3>
+              <p className="tp-muted">Chagua darasa kwanza ili kuona wanafunzi wake.</p>
+              <form onSubmit={(e) => submit(
+                e, "/portal/teacher/attendance", attendance,
+                "Attendance yamehifadhiwa kikamilifu.",
+                () => setAttendance((a) => ({ ...a, student_id: "", remarks: "" }))
+              )}>
+                <div className="tp-form-grid">
+                  <label>Darasa
+                    <select required value={attendance.class_id} onChange={(e) => setAttendance({ ...attendance, class_id: e.target.value, student_id: "" })}>
+                      <option value="">Chagua darasa</option>
+                      {classes.map((c) => <option key={c.id} value={c.id}>{nameOf(c)}</option>)}
+                    </select>
+                  </label>
+                  <label>Mwanafunzi
+                    <select required value={attendance.student_id} onChange={(e) => setAttendance({ ...attendance, student_id: e.target.value })}>
+                      <option value="">Chagua mwanafunzi</option>
+                      {attendanceStudents.map((s) => <option key={s.id} value={s.id}>{s.name} — {s.admissionNo || s.id}</option>)}
+                    </select>
+                  </label>
+                  <label>Tarehe
+                    <input type="date" required value={attendance.date} onChange={(e) => setAttendance({ ...attendance, date: e.target.value })} />
+                  </label>
+                  <label>Hali ya mahudhurio
+                    <select value={attendance.status} onChange={(e) => setAttendance({ ...attendance, status: e.target.value })}>
+                      <option value="PRESENT">Yupo (Present)</option>
+                      <option value="ABSENT">Hayupo (Absent)</option>
+                      <option value="LATE">Amechelewa (Late)</option>
+                      <option value="EXCUSED">Ana ruhusa (Excused)</option>
+                    </select>
+                  </label>
+                  <label className="tp-full">Maelezo (si lazima)
+                    <input maxLength="255" value={attendance.remarks} onChange={(e) => setAttendance({ ...attendance, remarks: e.target.value })} placeholder="Maelezo ya ziada" />
+                  </label>
+                </div>
+                <button className="tp-btn tp-btn-primary" disabled={saving || !attendanceStudents.length}>
+                  {saving ? "Inahifadhi..." : "Hifadhi mahudhurio"}
+                </button>
+                {attendance.class_id && !attendanceStudents.length && <p className="tp-muted">Hakuna wanafunzi waliopatikana katika darasa hili.</p>}
+              </form>
+            </section>
+          )}
+
+          {section === "results" && (
+            <section className="tp-panel tp-form-panel">
+              <h3>Kuingiza matokeo</h3>
+              <p className="tp-muted">Chagua mtihani hai. Darasa na somo hufuata mtihani uliochaguliwa.</p>
+              <form onSubmit={(e) => submit(
+                e, "/portal/teacher/results", result,
+                "Results yamehifadhiwa kikamilifu.",
+                () => setResult((r) => ({ ...r, total: "" }))
+              )}>
+                <div className="tp-form-grid">
+                  <label className="tp-full">Mtihani
+                    <select required value={result.exam_id} onChange={(e) => setResult({ exam_id: e.target.value, student_id: "", total: "" })}>
+                      <option value="">Chagua mtihani</option>
+                      {exams.map((ex) => <option key={ex.id} value={ex.id}>
+                        {ex.name || ex.examName || ex.exam_name || `Exam ${ex.id}`} — {nameOf(classes.find((c) => idOf(c) === String(ex.class_id ?? ex.classId)) || { id: ex.class_id ?? ex.classId })}
+                      </option>)}
+                    </select>
+                  </label>
+                  <label>Mwanafunzi
+                    <select required value={result.student_id} onChange={(e) => setResult({ ...result, student_id: e.target.value })}>
+                      <option value="">Chagua mwanafunzi</option>
+                      {resultStudents.map((s) => <option key={s.id} value={s.id}>{s.name} — {s.admissionNo || s.id}</option>)}
+                    </select>
+                  </label>
+                  <label>Alama alizopata
+                    <input required type="number" min="0" max={selectedExam?.total_marks ?? selectedExam?.totalMarks ?? 100} step="0.01" value={result.total} onChange={(e) => setResult({ ...result, total: e.target.value })} />
+                    <small>Alama zote: {selectedExam?.total_marks ?? selectedExam?.totalMarks ?? 100}</small>
+                  </label>
+                </div>
+                <button className="tp-btn tp-btn-primary" disabled={saving || !selectedExam || !resultStudents.length}>
+                  {saving ? "Inahifadhi..." : "Hifadhi matokeo"}
+                </button>
+                {result.exam_id && !resultStudents.length && <p className="tp-muted">Hakuna wanafunzi waliopatikana kwa darasa la mtihani huu.</p>}
+              </form>
+            </section>
+          )}
+
+          {section === "timetable" && (
+            <section className="tp-panel">
+              <h3>Timetable yangu</h3>
+              <div className="tp-table-wrap"><table className="tp-table">
+                <thead><tr><th>Siku</th><th>Mwanzo</th><th>Mwisho</th><th>Darasa</th><th>Somo</th></tr></thead>
+                <tbody>{timetable.map((t, i) => (
+                  <tr key={t.id || i}>
+                    <td>{t.dayOfWeek || t.day_of_week || "—"}</td>
+                    <td>{t.startTime || t.start_time || "—"}</td>
+                    <td>{t.endTime || t.end_time || "—"}</td>
+                    <td>{t.className || t.class_name || t.classId || t.class_id || "—"}</td>
+                    <td>{t.subjectName || t.subject_name || t.subjectId || t.subject_id || "—"}</td>
+                  </tr>
+                ))}{!timetable.length && <tr><td colSpan="5" className="tp-empty">Timetable bado haijawekwa.</td></tr>}</tbody>
+              </table></div>
+            </section>
+          )}
+        </>
+      )}
+        </div>
+        <footer className="sp-footer"><span>© {new Date().getFullYear()} NIA School &amp; Madrasa</span><span>Teacher Portal · Teaching Overview</span></footer>
+      </main>
+    </div>
+  );
+}

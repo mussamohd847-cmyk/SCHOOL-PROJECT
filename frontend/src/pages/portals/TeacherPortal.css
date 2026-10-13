@@ -1,0 +1,300 @@
+.tp-page{max-width:1200px;margin:0 auto;padding:28px 24px 18px;color:#243447;font-family:Inter,"Open Sans",Arial,sans-serif}
+.tp-header{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:4px 0 24px;border-bottom:1px solid #e4eaf0}
+.tp-eyebrow{font-size:11px;letter-spacing:1.5px;font-weight:800;color:#168c9b}
+.tp-header h1{font-size:30px;margin:7px 0;color:#173b50}
+.tp-header p,.tp-welcome p{margin:6px 0;color:#718096;font-size:14px}
+.tp-header-actions{display:flex;gap:9px;flex-wrap:wrap}
+.tp-btn{border:0;border-radius:6px;padding:11px 16px;font-weight:700;cursor:pointer;font-size:13px}
+.tp-btn:disabled{opacity:.55;cursor:not-allowed}
+.tp-btn-light{background:#eaf4f6;color:#176e79}
+.tp-btn-dark{background:#203d50;color:white}
+.tp-btn-primary{background:#168c9b;color:white;margin-top:18px}
+.tp-nav{display:flex;gap:6px;border-bottom:1px solid #e4eaf0;margin-bottom:22px;overflow-x:auto}
+.tp-nav button{background:transparent;border:0;border-bottom:3px solid transparent;padding:15px 17px;color:#607184;white-space:nowrap;cursor:pointer;font-weight:650}
+.tp-nav button.tp-nav-active{color:#168c9b;border-bottom-color:#168c9b}
+.tp-welcome{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:22px 24px;background:#f1f8f9;border-left:4px solid #168c9b;border-radius:7px;margin-bottom:20px}
+.tp-welcome h2{margin:6px 0;font-size:24px;color:#173b50}
+.tp-muted{color:#718096;font-size:13px}
+.tp-date{font-size:13px;font-weight:700;color:#176e79;background:white;border:1px solid #d8e9eb;border-radius:5px;padding:9px 12px}
+.tp-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:15px;margin-bottom:20px}
+.tp-stat{background:white;border:1px solid #e1e8ee;border-radius:8px;padding:20px;box-shadow:0 2px 7px #173b5008}
+.tp-stat span{display:block;color:#718096;font-size:13px}
+.tp-stat strong{display:block;font-size:30px;margin-top:10px;color:#168c9b}
+.tp-columns{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:20px}
+.tp-panel{background:white;border:1px solid #e1e8ee;border-radius:8px;padding:22px;margin-bottom:20px;min-width:0}
+.tp-panel h3{font-size:18px;color:#173b50;margin:0 0 17px}
+.tp-panel-heading{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.tp-panel-heading h3{margin-bottom:12px}
+.tp-panel-heading>span{color:#168c9b;background:#edf7f8;border-radius:20px;padding:4px 10px;font-size:12px;font-weight:700}
+.tp-list-row{display:flex;align-items:center;gap:10px;padding:13px 0;border-bottom:1px solid #edf1f4;font-size:14px}
+.tp-list-row:last-child{border-bottom:0}
+.tp-dot{width:8px;height:8px;border-radius:50%;background:#168c9b;flex-shrink:0}
+.tp-dot-gold{background:#d5a82e}
+.tp-table-wrap{overflow-x:auto;width:100%}
+.tp-table{width:100%;border-collapse:collapse;min-width:570px;font-size:13px}
+.tp-table th{text-align:left;background:#f5f8fa;color:#607184;font-weight:700}
+.tp-table th,.tp-table td{padding:13px 12px;border-bottom:1px solid #e8edf1;white-space:nowrap}
+.tp-table td{color:#354b5b}
+.tp-empty{color:#8795a2;text-align:center;padding:22px!important}
+.tp-form-panel{max-width:900px}
+.tp-form-panel>p{margin-top:-8px;margin-bottom:22px}
+.tp-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.tp-form-grid label{display:block;font-size:13px;font-weight:700;color:#354b5b}
+.tp-form-grid input,.tp-form-grid select{display:block;width:100%;box-sizing:border-box;margin-top:8px;padding:12px;border:1px solid #d7e0e7;border-radius:5px;background:white;color:#243447;font:inherit;outline:none}
+.tp-form-grid input:focus,.tp-form-grid select:focus{border-color:#168c9b;box-shadow:0 0 0 3px #168c9b18}
+.tp-form-grid small{display:block;margin-top:7px;color:#718096;font-weight:400}
+.tp-full{grid-column:1/-1}
+.tp-alert{padding:13px 16px;border-radius:6px;margin:0 0 16px;font-size:14px}
+.tp-alert-error{color:#9e3030;background:#fff0f0;border:1px solid #f1d0d0}
+.tp-alert-success{color:#216a45;background:#edf9f1;border:1px solid #cdebd7}
+.tp-loading{padding:50px;text-align:center;color:#607184}
+.tp-footer{text-align:center;color:#94a1ad;font-size:12px;padding:18px 0}
+@media(max-width:760px){.tp-page{padding:16px 12px}.tp-header{align-items:flex-start;flex-direction:column}.tp-header h1{font-size:25px}.tp-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.tp-stat{padding:15px}.tp-stat strong{font-size:25px}.tp-columns{grid-template-columns:1fr}.tp-panel{padding:16px}.tp-form-grid{grid-template-columns:1fr}.tp-full{grid-column:auto}.tp-welcome{padding:17px;align-items:flex-start;flex-direction:column}.tp-nav button{padding:13px 12px}}
+
+/* Match the Student Portal layout */
+.tp-layout { max-width:none!important; margin:0!important; padding:0!important; width:100%; }
+.tp-layout .sp-sidebar { background:#fff!important; }
+.tp-layout .sp-sidebar, .tp-layout .sp-sidebar * { color:initial; }
+.tp-layout .sp-brand strong,.tp-layout .sp-profile-text strong { color:#213a42; }
+.tp-layout .sp-brand span,.tp-layout .sp-profile-text span { color:#73848b; }
+.tp-layout .sp-nav-caption { color:#9aa8ad; }
+.tp-layout .sp-nav button { color:#667980; }
+.tp-layout .sp-nav button.active { background:#eaf7f6; color:#13808b; }
+.tp-layout .sp-help strong { color:#263d45; }
+.tp-layout .sp-help p { color:#73848b; }
+.tp-layout .sp-logout { color:#657980; }
+.tp-content { flex:1; }
+.tp-content .tp-welcome { background:linear-gradient(115deg,#137f8b,#1ba6a7); border-radius:14px; padding:27px 30px; color:#fff; margin-bottom:23px; }
+.tp-content .tp-welcome h2 { color:#fff; }
+.tp-content .tp-welcome p { color:#e0f5f3; }
+.tp-content .tp-stats { gap:15px; margin-bottom:23px; }
+.tp-content .tp-stat { border:1px solid #e6ecee; border-radius:12px; box-shadow:none; }
+.tp-content .tp-stat strong { color:#203941; }
+.tp-content .tp-panel { background:#fff; border:1px solid #e6ecee; border-radius:12px; padding:0; overflow:hidden; }
+.tp-content .tp-panel-heading { padding:21px 22px 15px; }
+.tp-content .tp-panel-heading h3,.tp-content .tp-panel>h3 { color:#203941; }
+.tp-content .tp-list-row { padding:14px 22px; border-top:1px solid #edf1f2; color:#62767d; }
+.tp-content .tp-table { font-size:11px; }
+.tp-content .tp-table th { background:#f8fafb; color:#85969b; font-size:9px; text-transform:uppercase; letter-spacing:.8px; }
+.tp-content .tp-table th,.tp-content .tp-table td { padding:14px 18px; border-bottom:1px solid #edf1f2; }
+.tp-content .tp-table td { color:#62767d; }
+.tp-content .tp-form-panel { padding-bottom:22px; }
+.tp-content .tp-form-panel form,.tp-content .tp-form-panel>p { margin-left:22px; margin-right:22px; }
+.tp-content .tp-form-grid input,.tp-content .tp-form-grid select { border:1px solid #dce5e7; border-radius:8px; padding:12px; }
+.tp-content .tp-btn-primary { background:#168c9b; border-radius:8px; color:#fff; }
+@media(max-width:700px) {
+ .tp-content .tp-columns { grid-template-columns:1fr; }
+ .tp-content .tp-stats { grid-template-columns:repeat(2,minmax(0,1fr)); }
+ .tp-content .tp-welcome { display:block; padding:22px 19px; }
+ .tp-content .tp-form-grid { grid-template-columns:1fr; }
+ .tp-content .tp-full { grid-column:auto; }
+}
+
+/* Teacher Portal English layout */
+.tp-layout .sp-brand strong,.tp-layout .sp-profile-text strong { color:#213a42; }
+.tp-layout .sp-brand span,.tp-layout .sp-profile-text span { color:#73848b; }
+.tp-layout .sp-nav-caption { color:#9aa8ad; }
+.tp-layout .sp-nav button { color:#667980; }
+.tp-layout .sp-nav button.active { background:#eaf7f6; color:#13808b; }
+.tp-layout .sp-help strong { color:#263d45; }
+.tp-layout .sp-help p { color:#73848b; }
+.tp-layout .sp-logout { color:#657980; }
+.tp-content { flex:1; }
+.tp-content .tp-stat,.tp-content .tp-panel { border:1px solid #e6ecee; border-radius:12px; box-shadow:none; }
+.tp-content .tp-btn-primary { background:#168c9b; border-radius:8px; color:#fff; }
+@media(max-width:700px) {
+ .tp-content .tp-columns { grid-template-columns:1fr; }
+ .tp-content .tp-stats { grid-template-columns:repeat(2,minmax(0,1fr)); }
+ .tp-content .tp-form-grid { grid-template-columns:1fr; }
+}
+
+
+/* FINAL: Match Teacher Portal colors to Student Portal */
+.tp-layout {
+  background: #f5f8f9 !important;
+  color: #263d45;
+  font-family: Inter, Arial, sans-serif;
+}
+
+.tp-layout .sp-sidebar {
+  background: #009698 !important;
+  border-right: 1px solid #e6ecee;
+}
+
+.tp-layout .sp-sidebar,
+.tp-layout .sp-sidebar * {
+  color: #000000 !important;
+}
+
+.tp-layout .sp-nav button.active {
+  background: #eaf7f6 !important;
+}
+
+.tp-layout .sp-main {
+  background: #f5f8f9;
+}
+
+.tp-layout .sp-topbar {
+  background: #ffffff;
+  border-bottom: 1px solid #e6ecee;
+}
+
+.tp-layout .sp-topbar h1 {
+  color: #1c363f;
+}
+
+.tp-content .tp-btn-primary {
+  background: #168c9b !important;
+  color: #ffffff !important;
+}
+
+.tp-content .tp-stat,
+.tp-content .tp-panel {
+  background: #ffffff;
+  border-color: #e6ecee;
+  border-radius: 12px;
+  box-shadow: none;
+}
+
+.tp-content .tp-panel h3 {
+  color: #203941;
+}
+
+.tp-content .tp-stat strong {
+  color: #203941;
+}
+
+.tp-content .tp-table th {
+  background: #f8fafb;
+  color: #85969b;
+}
+
+.tp-content .tp-table td {
+  color: #62767d;
+}
+
+/* Teacher navbar profile dropdown */
+.tp-profile-menu {
+  position: relative;
+  flex-shrink: 0;
+}
+.tp-profile-trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border: 1px solid #e6ecee;
+  border-radius: 9px;
+  background: #fff;
+  color: #263d45;
+  font: 600 12px Inter, Arial, sans-serif;
+  cursor: pointer;
+}
+.tp-profile-initial {
+  display: grid;
+  place-items: center;
+  width: 29px;
+  height: 29px;
+  border-radius: 50%;
+  background: #e0f4f2;
+  color: #168c9b;
+  font-weight: 800;
+}
+.tp-profile-dropdown {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 190px;
+  padding: 6px;
+  background: #fff;
+  border: 1px solid #e6ecee;
+  border-radius: 10px;
+  box-shadow: 0 10px 28px #17313a18;
+}
+.tp-profile-dropdown button {
+  display: block;
+  width: 100%;
+  padding: 11px 10px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: #52666d;
+  text-align: left;
+  font: 500 12px Inter, Arial, sans-serif;
+  cursor: pointer;
+}
+.tp-profile-dropdown button:hover,
+.tp-profile-dropdown button.active {
+  background: #eaf7f6;
+  color: #13808b;
+}
+.tp-profile-details p {
+  padding: 10px 0;
+  border-bottom: 1px solid #edf1f2;
+  color: #62767d;
+}
+.tp-profile-details strong {
+  color: #203941;
+}
+@media(max-width:700px) {
+  .tp-profile-trigger { gap: 5px; padding: 5px 7px; }
+  .tp-profile-trigger > span:nth-child(2) { display: none; }
+}
+
+
+/* NIA Teacher Dashboard — modern, responsive English overview */
+.tp-overview-heading {
+  display:flex; align-items:center; justify-content:space-between; gap:18px;
+  margin:0 0 20px; padding:22px 24px; background:#fff;
+  border:1px solid #e3ecee; border-left:5px solid #168c9b; border-radius:12px;
+}
+.tp-overview-heading h2 { margin:6px 0; color:#203941; font-size:22px; }
+.tp-overview-heading p { margin:0; color:#71848a; font-size:13px; }
+.tp-overview-eyebrow { color:#168c9b; font-size:10px; font-weight:800; letter-spacing:1.5px; }
+.tp-overview-date { flex-shrink:0; padding:9px 12px; background:#eff8f7; border-radius:8px; color:#147b83; font-size:12px; font-weight:750; }
+.tp-dashboard-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; align-items:stretch; }
+.tp-dashboard-panel { margin:0!important; min-width:0; }
+.tp-dashboard-panel .tp-panel-heading { padding:20px 21px 12px!important; }
+.tp-dashboard-panel .tp-panel-heading h3 { font-size:15px; }
+.tp-dashboard-row { display:flex; align-items:center; gap:13px; padding:14px 21px; border-top:1px solid #edf1f2; }
+.tp-schedule-time,.tp-exam-date { flex:0 0 82px; color:#168c9b; font-size:12px; font-weight:800; }
+.tp-schedule-time small { display:block; margin-top:5px; color:#839398; font-weight:500; }
+.tp-dashboard-row-main { display:flex; flex-direction:column; gap:5px; min-width:0; }
+.tp-dashboard-row-main strong { color:#29434a; font-size:13px; overflow-wrap:anywhere; }
+.tp-dashboard-row-main span,.tp-dashboard-row-main small { color:#7a8c91; font-size:12px; }
+.tp-text-button { display:block; margin:10px 20px 18px; padding:0; border:0; background:transparent; color:#168c9b; font-size:12px; font-weight:750; cursor:pointer; }
+.tp-text-button:hover { color:#0d6670; }
+.tp-attendance-total { display:flex; flex-direction:column; gap:5px; padding:8px 21px 17px; }
+.tp-attendance-total strong { color:#203941; font-size:30px; }
+.tp-attendance-total span,.tp-dashboard-note { color:#7a8c91; font-size:12px; }
+.tp-attendance-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; padding:0 21px 14px; }
+.tp-attendance-item { display:flex; align-items:center; gap:8px; padding:10px; background:#f7fafb; border-radius:8px; color:#60777d; font-size:12px; }
+.tp-attendance-item strong { margin-left:auto; color:#29434a; }
+.tp-attendance-dot { width:8px; height:8px; border-radius:50%; background:#168c9b; }
+.tp-attendance-dot.absent { background:#d65d5d; }
+.tp-attendance-dot.late { background:#d5a82e; }
+.tp-attendance-dot.excused { background:#6686c4; }
+.tp-dashboard-note { margin:8px 21px 14px; line-height:1.6; }
+.tp-progress-number { padding:8px 21px 0; color:#168c9b; font-size:34px; font-weight:800; }
+.tp-progress-footer { display:flex; align-items:center; gap:10px; margin:14px 21px; padding:13px; background:#f3f9f9; border-radius:8px; color:#71848a; font-size:12px; }
+.tp-progress-footer strong { color:#203941; font-size:18px; }
+.tp-announcement { padding:13px 21px; border-top:1px solid #edf1f2; }
+.tp-announcement strong { color:#29434a; font-size:13px; }
+.tp-announcement p { margin:6px 0; color:#6f8288; font-size:12px; line-height:1.6; white-space:pre-wrap; overflow-wrap:anywhere; }
+.tp-announcement small { color:#95a3a7; font-size:11px; }
+.tp-task-row { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:15px 21px; border-top:1px solid #edf1f2; }
+.tp-task-row strong { color:#29434a; font-size:13px; }
+.tp-task-row p { margin:5px 0 0; color:#819197; font-size:11px; line-height:1.5; }
+.tp-task-count { display:grid; place-items:center; min-width:32px; height:32px; padding:0 5px; box-sizing:border-box; border-radius:9px; background:#fff5df; color:#916b12; font-size:13px; font-weight:800; }
+@media(max-width:900px) { .tp-dashboard-grid { grid-template-columns:1fr; } }
+@media(max-width:520px) {
+  .tp-overview-heading { align-items:flex-start; flex-direction:column; padding:18px; }
+  .tp-dashboard-row { padding:13px 15px; }
+  .tp-dashboard-panel .tp-panel-heading { padding:17px 15px 10px!important; }
+  .tp-attendance-grid { padding-left:15px; padding-right:15px; }
+  .tp-attendance-total,.tp-progress-number { padding-left:15px; padding-right:15px; }
+  .tp-dashboard-note { margin-left:15px; margin-right:15px; }
+  .tp-task-row,.tp-announcement { padding-left:15px; padding-right:15px; }
+  .tp-text-button { margin-left:15px; }
+}

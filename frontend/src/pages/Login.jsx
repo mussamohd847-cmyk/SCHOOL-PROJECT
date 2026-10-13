@@ -8,6 +8,8 @@ export default function Login() {
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -73,15 +75,42 @@ export default function Login() {
         .trim()
         .toLowerCase();
 
+      const normalizedRole = {
+        admin: "ADMIN",
+        accountant: "ACCOUNTANT",
+        teacher: "TEACHER",
+        parent: "PARENT",
+        pupil: "PUPIL",
+        student: "PUPIL",
+      }[role];
+
+      if (!normalizedRole) {
+        throw new Error(`Unsupported account role: ${role || "unknown"}`);
+      }
+
+      const normalizedUser = {
+        ...user,
+        role: normalizedRole,
+        permissions: Array.isArray(user.permissions) ? user.permissions : [],
+      };
+
       /*
        * Save login information
        */
-      localStorage.setItem("nia_token", token);
-      localStorage.setItem("nia_user", JSON.stringify(user));
-      localStorage.setItem("nia_logged_in", "true");
+      // Clear any previous account before saving the new login.
+      for (const store of [localStorage, sessionStorage]) {
+        store.removeItem("nia_token");
+        store.removeItem("nia_user");
+        store.removeItem("nia_logged_in");
+      }
 
-      console.log("NIA LOGIN SUCCESS:", user);
-      console.log("NIA USER ROLE:", role);
+      const storage = rememberMe ? localStorage : sessionStorage;
+      storage.setItem("nia_token", token);
+      storage.setItem("nia_user", JSON.stringify(normalizedUser));
+      storage.setItem("nia_logged_in", "true");
+
+      console.log("NIA LOGIN SUCCESS:", normalizedUser);
+      console.log("NIA USER ROLE:", normalizedRole);
 
       /*
        * Database roles:
@@ -93,36 +122,29 @@ export default function Login() {
        * pupil
        */
 
-      switch (role) {
-        case "admin":
-          navigate("/dashboard", { replace: true });
+      switch (normalizedRole) {
+        case "ADMIN":
+          window.location.replace("/dashboard");
           break;
 
-        case "accountant":
-          navigate("/accountant/dashboard", { replace: true });
+        case "TEACHER":
+          window.location.replace("/teacher/dashboard");
           break;
 
-        case "teacher":
-          navigate("/teacher/dashboard", { replace: true });
+        case "PUPIL":
+          window.location.replace("/student/dashboard");
           break;
 
-        case "parent":
-          navigate("/parent/dashboard", { replace: true });
+        case "ACCOUNTANT":
+          window.location.replace("/finance");
           break;
 
-        case "pupil":
-          navigate("/student/dashboard", { replace: true });
+        case "PARENT":
+          setError("Parent portal haijaunganishwa bado. Tafadhali wasiliana na administrator.");
           break;
 
         default:
-          localStorage.removeItem("nia_token");
-          localStorage.removeItem("nia_user");
-          localStorage.removeItem("nia_logged_in");
-
-          setError(
-            `Your account role "${role || "unknown"}" is not recognized.`
-          );
-          break;
+          setError("Unsupported account role.");
       }
     } catch (err) {
       console.error("NIA LOGIN ERROR:", err);
@@ -218,20 +240,39 @@ export default function Login() {
               Password
             </label>
 
-            <input
-              id="password"
-              name="password"
-              type="password"
-              value={password}
-              onChange={(e) => {
-                setPassword(e.target.value);
-                setError("");
-              }}
-              placeholder="Enter password"
-              autoComplete="current-password"
-              disabled={loading}
-              required
-            />
+            <div className="nia-password-wrapper">
+              <input
+                id="password"
+                name="password"
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  setError("");
+                }}
+                placeholder="Enter password"
+                autoComplete="current-password"
+                disabled={loading}
+                required
+              />
+              <button
+                type="button"
+                className="nia-password-toggle"
+                onClick={() => setShowPassword((value) => !value)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? "Hide" : "Show"}
+              </button>
+            </div>
+            <label className="nia-remember-me">
+              <input
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                disabled={loading}
+              />
+              <span>Remember Me</span>
+            </label>
           </div>
 
           {/* ERROR */}

@@ -161,8 +161,7 @@ export default function Academics() {
      STATE
   ===================================================== */
 
-  const [tab, setTab] =
-    useState("exams");
+  const [tab, setTab] = useState(() => new URLSearchParams(window.location.search).get("tab") || "exams");
 
   const [modal, setModal] =
     useState(false);
