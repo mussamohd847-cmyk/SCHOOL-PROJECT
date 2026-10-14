@@ -8,10 +8,13 @@ class Payment(db.Model, TimestampMixin, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     student_id = db.Column(db.Integer, db.ForeignKey("students.id"), nullable=False)
     fee_structure_id = db.Column(db.Integer, db.ForeignKey("fee_structure.id"), nullable=False)
+    receipt_no = db.Column(db.String(30), nullable=False, unique=True)
+    term_id = db.Column(db.Integer, db.ForeignKey("terms.id"), nullable=False)
+    year_id = db.Column(db.Integer, db.ForeignKey("academic_years.id"), nullable=False)
     amount = db.Column(db.Numeric(12, 2), nullable=False)
     payment_date = db.Column(db.Date, nullable=False)
     payment_method = db.Column(
-        db.Enum("CASH", "BANK", "MOBILE_MONEY", "CARD", "OTHER", name="payment_method"),
+        db.Enum("Cash", "Bank", "Mobile Money", name="payment_method"),
         nullable=False,
     )
     reference_number = db.Column(db.String(100), unique=True)
