@@ -201,6 +201,11 @@ def permissions_required(*codes):
                     401,
                 )
 
+            # Admin anapata kila kitu
+            role = str(getattr(user, "role", "") or "").strip().lower()
+            if role == "admin":
+                return f(*args, **kwargs)
+
             for code in codes:
                 if user_has_permission(user, code):
                     return f(*args, **kwargs)
