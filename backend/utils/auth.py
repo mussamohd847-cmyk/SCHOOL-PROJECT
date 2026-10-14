@@ -134,47 +134,87 @@ def login_required(f):
     return decorated
 
 
-def roles_required(*roles):
+def normalize_role(role):
+    role = str(role or "").strip().lower()
 
-    allowed_roles = {
-        str(role).strip().lower()
-        for role in roles
+    aliases = {
+        "student": "student",
+        "pupil": "student",
+        "administrator": "admin",
     }
 
-    def decorator(f):
+    return aliases.get(role, role)
 
+
+def roles_required(*roles):
+    allowed_roles = {normalize_role(role) for role in roles}
+
+    def decorator(f):
         @wraps(f)
         def decorated(*args, **kwargs):
-
-            user = getattr(
-                request,
-                "current_user",
-                None,
-            )
+            user = getattr(request, "current_user", None)
 
             if not user:
-
                 return error_response(
                     "Authentication required",
                     401,
                 )
 
-            user_role = str(
-                user.role or ""
-            ).strip().lower()
+            user_role = normalize_role(user.role)
 
             if user_role not in allowed_roles:
-
                 return error_response(
                     "You do not have permission to perform this action",
                     403,
                 )
 
-            return f(
-                *args,
-                **kwargs,
+            return f(*args, **kwargs)
+
+        return decorated
+
+    return decorator
+
+
+# ==============================================================
+# PERMISSION-BASED ACCESS CONTROL
+# ==============================================================
+
+def permissions_required(*codes):
+    """
+    Decorator: mtumiaji lazima awe na MOJAWAPO ya permissions hizi.
+    Tumia baada ya @login_required.
+
+    Mfano:
+        @permissions_required("attendance.mark")
+        def mark_attendance(): ...
+    """
+    def decorator(f):
+        @wraps(f)
+        def decorated(*args, **kwargs):
+            from utils.permissions import user_has_permission
+
+            user = getattr(request, "current_user", None)
+
+            if not user:
+                return error_response(
+                    "Authentication required",
+                    401,
+                )
+
+            for code in codes:
+                if user_has_permission(user, code):
+                    return f(*args, **kwargs)
+
+            return error_response(
+                "You do not have permission to perform this action",
+                403,
             )
 
         return decorated
 
     return decorator
+
+
+def permission_required(code):
+    """Decorator: mtumiaji lazima awe na permission hii mahsusi."""
+    return permissions_required(code)
