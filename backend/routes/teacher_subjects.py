@@ -19,7 +19,13 @@ def list_teacher_subjects():
             query = query.filter_by(teacher_id=teacher_id)
         if subject_id:
             query = query.filter_by(subject_id=subject_id)
-        items, pagination = paginate_query(query, request.args)
+        items = query.all()
+        pagination = {
+            "page": 1,
+            "per_page": len(items),
+            "total": len(items),
+            "pages": 1,
+        }
         return success_response("Teacher-subject assignments", [i.to_dict() for i in items], pagination=pagination)
     except Exception as e:
         import traceback
