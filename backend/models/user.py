@@ -22,10 +22,8 @@ class User(db.Model):
     role = db.Column(
         db.Enum(
             "admin",
-            "accountant",
             "teacher",
-            "parent",
-            "pupil",
+            "student",
         ),
         nullable=False,
     )

@@ -18,10 +18,16 @@ from models.result import Result, compute_grade
 from models.fee_structure import FeeStructure
 from models.payment import Payment
 from models.setting import Setting
+from models.permission import Permission, Perm
+from models.role_permission import RolePermission
 
 __all__ = [
     "User", "ClassModel", "Stream", "Subject", "Student", "Teacher",
     "TeacherClass", "TeacherSubject", "AcademicYear", "Term", "Timetable",
     "Attendance", "Exam", "Result", "compute_grade", "FeeStructure",
-    "Payment", "Setting",
+    "Payment", "Setting", "LessonPlan", "Announcement",
+    "Permission", "Perm", "RolePermission",
 ]
+
+from models.lesson_plan import LessonPlan
+from models.announcement import Announcement
