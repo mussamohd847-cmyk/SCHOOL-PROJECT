@@ -2,9 +2,10 @@ import axios from "axios";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_URL ||
-  "http://127.0.0.1:6001/api";
+  "https://niaschool.onrender.com/api";
 
 const api = axios.create({
+  timeout: 60000,
   baseURL: API_BASE_URL,
   withCredentials: true,
   headers: {

@@ -1,0 +1,2 @@
+import React from "react"; import {Page,Card,Table,useData} from "../components/Page";
+export default function Activity(){const {data}=useData("activityLog");return <Page title="Activity Log" subtitle="System actions and audit trail"><Card><Table rows={[...data].reverse()} columns={[{key:"createdAt",label:"Time"},{key:"userName",label:"User"},{key:"action",label:"Action"},{key:"module",label:"Module"},{key:"description",label:"Description"}]}/></Card></Page>}

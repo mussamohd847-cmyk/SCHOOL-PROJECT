@@ -1,0 +1,95 @@
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import api from "../../services/api";
+
+export default function StudentPortal() {
+  const navigate = useNavigate();
+  const [data, setData] = useState(null);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api.get("/portal/student/dashboard")
+      .then((res) => setData(res.data?.data || null))
+      .catch((err) => setError(err.response?.data?.message || "Failed to load student information."))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const logout = () => {
+    ["nia_token", "nia_user", "nia_logged_in"].forEach((k) => localStorage.removeItem(k));
+    navigate("/login", { replace: true });
+  };
+
+  const student = data?.student;
+
+  return (
+    <div style={{ maxWidth: 1100, margin: "0 auto", padding: 24, fontFamily: "Arial, sans-serif", color: "#243447" }}>
+      <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid #ddd", paddingBottom: 16 }}>
+        <div><h1 style={{ margin: 0, color: "#168c9b" }}>NIA Student Portal</h1><p>School &amp; Madrasa</p></div>
+        <button onClick={logout}>Sign out</button>
+      </header>
+
+      {loading && <p>Loading your information...</p>}
+      {error && <p role="alert" style={{ color: "crimson" }}>{error}</p>}
+
+      {student && <>
+        <h2>Welcome, {student.name}</h2>
+        <p>Admission No: {student.admissionNo || "Not available"}</p>
+
+        <section style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: 16 }}>
+          {[
+            ["Attendance records", data.attendance?.length || 0],
+            ["Results", data.results?.length || 0],
+            ["Payments", data.payments?.length || 0],
+            ["Fee structures", data.fees?.length || 0],
+          ].map(([label, value]) => (
+            <div key={label} style={{ padding: 18, border: "1px solid #ddd", borderRadius: 8 }}>
+              <p>{label}</p><strong style={{ fontSize: 26 }}>{value}</strong>
+            </div>
+          ))}
+        </section>
+
+        <h2>My Results</h2>
+        <div style={{ overflowX: "auto" }}>
+          <table width="100%" cellPadding="10" style={{ borderCollapse: "collapse" }}>
+            <thead><tr>{["Exam", "Subject", "Total", "Grade"].map(x => <th key={x} style={{ textAlign: "left", borderBottom: "1px solid #ddd" }}>{x}</th>)}</tr></thead>
+            <tbody>
+              {(data.results || []).map((r, i) => <tr key={r.id || i}>
+                <td>{r.examName || r.exam_name || r.examId || r.exam_id || "—"}</td>
+                <td>{r.subjectName || r.subject_name || r.subjectId || r.subject_id || "—"}</td>
+                <td>{r.total ?? "—"}</td><td>{r.grade || "—"}</td>
+              </tr>)}
+              {!data.results?.length && <tr><td colSpan="4">No results available yet.</td></tr>}
+            </tbody>
+          </table>
+        </div>
+
+        <h2>My Attendance</h2>
+        <div style={{ overflowX: "auto" }}>
+          <table width="100%" cellPadding="10" style={{ borderCollapse: "collapse" }}>
+            <thead><tr>{["Date", "Status", "Remarks"].map(x => <th key={x} style={{ textAlign: "left", borderBottom: "1px solid #ddd" }}>{x}</th>)}</tr></thead>
+            <tbody>
+              {(data.attendance || []).map((a, i) => <tr key={a.id || i}>
+                <td>{a.date || "—"}</td><td>{a.status || "—"}</td><td>{a.remarks || "—"}</td>
+              </tr>)}
+              {!data.attendance?.length && <tr><td colSpan="3">No attendance records available.</td></tr>}
+            </tbody>
+          </table>
+        </div>
+
+        <h2>My Payments</h2>
+        <div style={{ overflowX: "auto" }}>
+          <table width="100%" cellPadding="10" style={{ borderCollapse: "collapse" }}>
+            <thead><tr>{["Date", "Amount", "Reference"].map(x => <th key={x} style={{ textAlign: "left", borderBottom: "1px solid #ddd" }}>{x}</th>)}</tr></thead>
+            <tbody>
+              {(data.payments || []).map((p, i) => <tr key={p.id || i}>
+                <td>{p.paymentDate || p.payment_date || "—"}</td><td>{p.amount ?? "—"}</td><td>{p.reference || p.receiptNo || p.receipt_no || "—"}</td>
+              </tr>)}
+              {!data.payments?.length && <tr><td colSpan="3">No payment records available.</td></tr>}
+            </tbody>
+          </table>
+        </div>
+      </>}
+    </div>
+  );
+}

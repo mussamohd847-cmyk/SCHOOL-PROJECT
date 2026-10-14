@@ -1,0 +1,148 @@
+import React, { useEffect, useState } from "react";
+import api from "../services/api";
+import { Page, Card } from "../components/Page";
+
+export default function TeacherClassAssignment() {
+  const [teachers, setTeachers] = useState([]);
+  const [classes, setClasses] = useState([]);
+  const [streams, setStreams] = useState([]);
+  const [years, setYears] = useState([]);
+  const [assignments, setAssignments] = useState([]);
+  const [teacherId, setTeacherId] = useState("");
+  const [classId, setClassId] = useState("");
+  const [streamId, setStreamId] = useState("");
+  const [yearId, setYearId] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState("");
+
+  const rows = (response) => {
+    const d = response?.data?.data;
+    return Array.isArray(d) ? d : Array.isArray(response?.data) ? response.data : [];
+  };
+
+  const load = async () => {
+    setLoading(true);
+    try {
+      const [t, c, s, y, a] = await Promise.all([
+        api.get("/teachers"),
+        api.get("/classes"),
+        api.get("/streams"),
+        api.get("/academic-years"),
+        api.get("/teacher-classes"),
+      ]);
+      setTeachers(rows(t));
+      setClasses(rows(c));
+      setStreams(rows(s));
+      setYears(rows(y));
+      setAssignments(rows(a));
+    } catch (e) {
+      setMessage(e.response?.data?.message || "Imeshindikana kupakia taarifa. Hakikisha umeingia kama Admin.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { load(); }, []);
+
+  const nameOf = (list, id) => {
+    const item = list.find((x) => Number(x.id) === Number(id));
+    return item?.name || item?.full_name || item?.teacher_name || `ID ${id ?? "-"}`;
+  };
+
+  const submit = async (e) => {
+    e.preventDefault();
+    if (!teacherId || !classId || !yearId) {
+      setMessage("Chagua mwalimu, darasa na mwaka wa masomo.");
+      return;
+    }
+    setSaving(true);
+    setMessage("");
+    try {
+      await api.post("/teacher-classes", {
+        teacher_id: Number(teacherId),
+        class_id: Number(classId),
+        stream_id: streamId ? Number(streamId) : null,
+        academic_year_id: Number(yearId),
+      });
+      setMessage("Mwalimu amepangiwa darasa kikamilifu.");
+      setTeacherId("");
+      setClassId("");
+      setStreamId("");
+      await load();
+    } catch (e) {
+      setMessage(e.response?.data?.message || "Imeshindikana kuhifadhi assignment.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const remove = async (item) => {
+    if (!window.confirm("Una uhakika unataka kufuta assignment hii?")) return;
+    try {
+      await api.delete(`/teacher-classes/${item.id}`);
+      setMessage("Assignment imefutwa.");
+      await load();
+    } catch (e) {
+      setMessage(e.response?.data?.message || "Imeshindikana kufuta assignment.");
+    }
+  };
+
+  const visibleStreams = streams.filter((x) => !classId || Number(x.class_id) === Number(classId));
+
+  return (
+    <Page title="Teacher Class Assignment" subtitle="Panga walimu kusimamia madarasa">
+      <Card>
+        <form onSubmit={submit} style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))",gap:14,alignItems:"end"}}>
+          <label style={{display:"grid",gap:6}}>Mwalimu
+            <select value={teacherId} onChange={(e)=>setTeacherId(e.target.value)} required>
+              <option value="">Chagua mwalimu</option>
+              {teachers.map((t)=><option key={t.id} value={t.id}>{t.name || t.full_name || t.teacher_name || `Teacher ${t.id}`}</option>)}
+            </select>
+          </label>
+          <label style={{display:"grid",gap:6}}>Darasa
+            <select value={classId} onChange={(e)=>{setClassId(e.target.value);setStreamId("");}} required>
+              <option value="">Chagua darasa</option>
+              {classes.map((c)=><option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+          </label>
+          <label style={{display:"grid",gap:6}}>Stream (hiari)
+            <select value={streamId} onChange={(e)=>setStreamId(e.target.value)}>
+              <option value="">Darasa lote / hakuna stream</option>
+              {visibleStreams.map((x)=><option key={x.id} value={x.id}>{x.name}</option>)}
+            </select>
+          </label>
+          <label style={{display:"grid",gap:6}}>Mwaka wa masomo
+            <select value={yearId} onChange={(e)=>setYearId(e.target.value)} required>
+              <option value="">Chagua mwaka</option>
+              {years.map((y)=><option key={y.id} value={y.id}>{y.name}{y.status==="ACTIVE"?" (Active)":""}</option>)}
+            </select>
+          </label>
+          <button type="submit" disabled={saving}>{saving ? "Inahifadhi..." : "Pangia Mwalimu"}</button>
+        </form>
+        {message && <p role="status" style={{marginTop:12}}>{message}</p>}
+      </Card>
+
+      <Card>
+        <h3>Walimu waliopangiwa madarasa</h3>
+        {loading ? <p inapakia="true">Inapakia...</p> : (
+          <div style={{overflowX:"auto"}}>
+            <table style={{width:"100%",borderCollapse:"collapse"}}>
+              <thead><tr>{["Mwalimu","Darasa","Stream","Mwaka","Kitendo"].map((x)=><th key={x} style={{textAlign:"left",padding:10,borderBottom:"1px solid #ddd"}}>{x}</th>)}</tr></thead>
+              <tbody>
+                {assignments.map((a)=><tr key={a.id}>
+                  <td style={{padding:10,borderBottom:"1px solid #eee"}}>{nameOf(teachers,a.teacher_id)}</td>
+                  <td style={{padding:10,borderBottom:"1px solid #eee"}}>{nameOf(classes,a.class_id)}</td>
+                  <td style={{padding:10,borderBottom:"1px solid #eee"}}>{a.stream_id ? nameOf(streams,a.stream_id) : "Darasa lote"}</td>
+                  <td style={{padding:10,borderBottom:"1px solid #eee"}}>{nameOf(years,a.academic_year_id)}</td>
+                  <td style={{padding:10,borderBottom:"1px solid #eee"}}><button type="button" onClick={()=>remove(a)}>Futa</button></td>
+                </tr>)}
+                {!assignments.length && <tr><td colSpan="5" style={{padding:12}}>Hakuna assignment zilizopo.</td></tr>}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Card>
+    </Page>
+  );
+}

@@ -53,14 +53,14 @@ const menu = [
     label: "Dashboard",
     icon: "⌂",
     path: "/dashboard",
-    roles: ["ADMIN", "ACCOUNTANT", "TEACHER", "PARENT", "PUPIL"],
+    roles: ["ADMIN", "TEACHER", "STUDENT"],
   },
   {
     id: "students",
     label: "Students",
     icon: "♙",
     path: "/students",
-    roles: ["ADMIN", "ACCOUNTANT", "TEACHER"],
+    roles: ["ADMIN", "TEACHER"],
   },
   {
     id: "teachers",
@@ -88,7 +88,7 @@ const menu = [
     label: "Finance",
     icon: "▤",
     path: "/finance",
-    roles: ["ADMIN", "ACCOUNTANT"],
+    roles: ["ADMIN"],
   },
   {
     id: "madrasa",
@@ -109,7 +109,7 @@ const menu = [
     label: "Reports",
     icon: "▥",
     path: "/reports",
-    roles: ["ADMIN", "ACCOUNTANT", "TEACHER", "PARENT", "PUPIL"],
+    roles: ["ADMIN", "TEACHER", "STUDENT"],
   },
   {
     id: "activity",
@@ -152,7 +152,7 @@ function getCurrentUser() {
     return {
       ...user,
       role: String(user.role).trim().toUpperCase() === "STUDENT"
-        ? "PUPIL"
+        ? "STUDENT"
         : String(user.role).trim().toUpperCase(),
     };
   } catch {
@@ -358,9 +358,8 @@ function ProtectedPage({ children, roles }) {
 
   const roleHome = {
     ADMIN: "/dashboard",
-    ACCOUNTANT: "/finance",
     TEACHER: "/teacher/dashboard",
-    PUPIL: "/student/dashboard",
+    STUDENT: "/student/dashboard",
   };
 
   const home = roleHome[user.role] || "/login";
@@ -436,7 +435,7 @@ export default function App() {
       <Route
         path="/student/dashboard"
         element={
-          isLoggedIn() && getCurrentUser()?.role === "PUPIL"
+          isLoggedIn() && getCurrentUser()?.role === "STUDENT"
             ? <StudentPortal />
             : <Navigate to="/login" replace />
         }
@@ -467,7 +466,7 @@ export default function App() {
       <Route
         path="/students"
         element={
-          <ProtectedPage roles={["ADMIN", "ACCOUNTANT", "TEACHER"]}>
+          <ProtectedPage roles={["ADMIN", "TEACHER"]}>
             <Students />
           </ProtectedPage>
         }
@@ -503,7 +502,7 @@ export default function App() {
       <Route
         path="/finance"
         element={
-          <ProtectedPage roles={["ADMIN", "ACCOUNTANT"]}>
+          <ProtectedPage roles={["ADMIN"]}>
             <Finance />
           </ProtectedPage>
         }
@@ -530,7 +529,7 @@ export default function App() {
       <Route
         path="/reports"
         element={
-          <ProtectedPage roles={["ADMIN", "ACCOUNTANT", "TEACHER"]}>
+          <ProtectedPage roles={["ADMIN", "TEACHER"]}>
             <Reports />
           </ProtectedPage>
         }

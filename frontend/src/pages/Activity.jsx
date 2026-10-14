@@ -14,7 +14,7 @@ export default function Activity() {
   const [accounts, setAccounts] = useState([]);
   const [students, setStudents] = useState([]);
   const [teachers, setTeachers] = useState([]);
-  const [role, setRole] = useState("pupil");
+  const [role, setRole] = useState("student");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [personId, setPersonId] = useState("");
@@ -71,7 +71,7 @@ export default function Activity() {
     setMessage("");
     setError("");
 
-    if (!personId && ["teacher", "pupil"].includes(role)) {
+    if (!personId && ["teacher", "student"].includes(role)) {
       setError("Select mwanafunzi au mwalimu kwanza.");
       return;
     }
@@ -84,7 +84,7 @@ export default function Activity() {
         password,
         role,
         name: selected ? personName(selected) : username,
-        ...(role === "pupil" ? { student_id: Number(personId) } : {}),
+        ...(role === "student" ? { student_id: Number(personId) } : {}),
         ...(role === "teacher" ? { teacher_id: Number(personId) } : {}),
       });
 
@@ -155,7 +155,7 @@ export default function Activity() {
               setRole(e.target.value);
               setPersonId("");
             }}>
-              <option value="pupil">Student</option>
+              <option value="student">Student</option>
               <option value="teacher">Teacher</option>
             </select>
           </Field>
@@ -166,7 +166,7 @@ export default function Activity() {
               {people.map(p => {
                 const linked = role === "teacher"
                   ? (p.user_id || accounts.some(a => a.role === "teacher" && Number(a.teacher_id) === Number(p.id)))
-                  : accounts.some(a => a.role === "pupil" && Number(a.student_id) === Number(p.id));
+                  : accounts.some(a => a.role === "student" && Number(a.student_id) === Number(p.id));
 
                 return (
                   <option key={p.id} value={p.id} disabled={Boolean(linked)}>

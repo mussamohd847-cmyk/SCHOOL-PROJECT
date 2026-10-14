@@ -77,11 +77,9 @@ export default function Login() {
 
       const normalizedRole = {
         admin: "ADMIN",
-        accountant: "ACCOUNTANT",
         teacher: "TEACHER",
-        parent: "PARENT",
-        pupil: "PUPIL",
-        student: "PUPIL",
+        pupil: "STUDENT",
+        student: "STUDENT",
       }[role];
 
       if (!normalizedRole) {
@@ -131,16 +129,8 @@ export default function Login() {
           window.location.replace("/teacher/dashboard");
           break;
 
-        case "PUPIL":
+        case "STUDENT":
           window.location.replace("/student/dashboard");
-          break;
-
-        case "ACCOUNTANT":
-          window.location.replace("/finance");
-          break;
-
-        case "PARENT":
-          setError("Parent portal haijaunganishwa bado. Tafadhali wasiliana na administrator.");
           break;
 
         default:
