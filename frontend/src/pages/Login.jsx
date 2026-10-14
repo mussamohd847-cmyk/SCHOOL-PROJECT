@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../services/api";
 import "./Login.css";
@@ -13,9 +13,31 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // 🔥 RUKA LOGIN KAMA USER AMESHAINGIA (instant)
+  useEffect(() => {
+    const token =
+      localStorage.getItem("nia_token") ||
+      sessionStorage.getItem("nia_token");
+    const userRaw =
+      localStorage.getItem("nia_user") ||
+      sessionStorage.getItem("nia_user");
+    const loggedIn =
+      localStorage.getItem("nia_logged_in") ||
+      sessionStorage.getItem("nia_logged_in");
+
+    if (token && userRaw && loggedIn === "true") {
+      try {
+        const user = JSON.parse(userRaw);
+        const role = String(user.role || "").toUpperCase();
+        if (role === "ADMIN") window.location.replace("/dashboard");
+        else if (role === "TEACHER") window.location.replace("/teacher/dashboard");
+        else if (role === "STUDENT") window.location.replace("/student/dashboard");
+      } catch (e) {}
+    }
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (loading) return;
 
     const cleanUsername = username.trim();
@@ -34,47 +56,18 @@ export default function Login() {
         password: password,
       });
 
-      /*
-       * Expected backend response:
-       *
-       * {
-       *   success: true,
-       *   data: {
-       *     token: "...",
-       *     user: {
-       *       id: 1,
-       *       username: "admin",
-       *       name: "NIA Administrator",
-       *       role: "admin",
-       *       status: "active"
-       *     }
-       *   }
-       * }
-       */
-
       const body = response?.data;
-
       const token = body?.data?.token;
       const user = body?.data?.user;
 
-      if (!token) {
-        throw new Error("Authentication token was not returned.");
-      }
-
-      if (!user) {
-        throw new Error("User information was not returned.");
-      }
+      if (!token) throw new Error("Authentication token was not returned.");
+      if (!user) throw new Error("User information was not returned.");
 
       if (user.status && String(user.status).toLowerCase() !== "active") {
-        throw new Error(
-          "Your account is inactive. Please contact the administrator."
-        );
+        throw new Error("Your account is inactive. Please contact the administrator.");
       }
 
-      const role = String(user.role || "")
-        .trim()
-        .toLowerCase();
-
+      const role = String(user.role || "").trim().toLowerCase();
       const normalizedRole = {
         admin: "ADMIN",
         teacher: "TEACHER",
@@ -92,10 +85,6 @@ export default function Login() {
         permissions: Array.isArray(user.permissions) ? user.permissions : [],
       };
 
-      /*
-       * Save login information
-       */
-      // Clear any previous account before saving the new login.
       for (const store of [localStorage, sessionStorage]) {
         store.removeItem("nia_token");
         store.removeItem("nia_user");
@@ -107,53 +96,20 @@ export default function Login() {
       storage.setItem("nia_user", JSON.stringify(normalizedUser));
       storage.setItem("nia_logged_in", "true");
 
-      console.log("NIA LOGIN SUCCESS:", normalizedUser);
-      console.log("NIA USER ROLE:", normalizedRole);
-
-      /*
-       * Database roles:
-       *
-       * admin
-       * accountant
-       * teacher
-       * parent
-       * pupil
-       */
-
-      switch (normalizedRole) {
-        case "ADMIN":
-          window.location.replace("/dashboard");
-          break;
-
-        case "TEACHER":
-          window.location.replace("/teacher/dashboard");
-          break;
-
-        case "STUDENT":
-          window.location.replace("/student/dashboard");
-          break;
-
-        default:
-          setError("Unsupported account role.");
-      }
+      // 🔥 NENDA DASHBOARD MARA MOJA (bila kusubiri)
+      if (normalizedRole === "ADMIN") window.location.replace("/dashboard");
+      else if (normalizedRole === "TEACHER") window.location.replace("/teacher/dashboard");
+      else if (normalizedRole === "STUDENT") window.location.replace("/student/dashboard");
+      else setError("Unsupported account role.");
     } catch (err) {
-      console.error("NIA LOGIN ERROR:", err);
-
-      /*
-       * Axios-style error
-       */
       const backendMessage =
         err?.response?.data?.message ||
         err?.response?.data?.error ||
         err?.response?.data?.data?.message;
 
-      if (backendMessage) {
-        setError(backendMessage);
-      } else if (err?.message) {
-        setError(err.message);
-      } else {
-        setError("Unable to connect to the server.");
-      }
+      if (backendMessage) setError(backendMessage);
+      else if (err?.message) setError(err.message);
+      else setError("Unable to connect to the server.");
     } finally {
       setLoading(false);
     }
@@ -162,60 +118,31 @@ export default function Login() {
   return (
     <main className="nia-login-page">
       <div className="nia-login-card">
-
-        {/* LOGO */}
         <div className="nia-login-brand">
-          <Link
-            to="/"
-            className="nia-login-logo-link"
-          >
-            <img
-              src="/NIA SCHOOLS.jpg"
-              alt="Nimble Integrated Academy"
-              className="nia-login-logo"
-            />
+          <Link to="/" className="nia-login-logo-link">
+            <img src="/NIA SCHOOLS.jpg" alt="Nimble Integrated Academy" className="nia-login-logo" />
           </Link>
-
           <div className="nia-login-school-name">
             <h1>NIMBLE INTEGRATED ACADEMY</h1>
             <span>(NIA)</span>
           </div>
         </div>
 
-        {/* HEADER */}
         <div className="nia-login-header">
           <span>SCHOOL &amp; MADRASA</span>
-
           <h2>Welcome Back</h2>
-
-          <p>
-            Sign in to access the NIA School &amp; Madrasa
-            Management System.
-          </p>
+          <p>Sign in to access the NIA School &amp; Madrasa Management System.</p>
         </div>
 
-        {/* LOGIN FORM */}
-        <form
-          onSubmit={handleSubmit}
-          className="nia-login-form"
-          noValidate
-        >
-
-          {/* USERNAME */}
+        <form onSubmit={handleSubmit} className="nia-login-form" noValidate>
           <div className="nia-login-input-group">
-            <label htmlFor="username">
-              Username
-            </label>
-
+            <label htmlFor="username">Username</label>
             <input
               id="username"
               name="username"
               type="text"
               value={username}
-              onChange={(e) => {
-                setUsername(e.target.value);
-                setError("");
-              }}
+              onChange={(e) => { setUsername(e.target.value); setError(""); }}
               placeholder="Enter username"
               autoComplete="username"
               autoFocus
@@ -224,22 +151,15 @@ export default function Login() {
             />
           </div>
 
-          {/* PASSWORD */}
           <div className="nia-login-input-group">
-            <label htmlFor="password">
-              Password
-            </label>
-
+            <label htmlFor="password">Password</label>
             <div className="nia-password-wrapper">
               <input
                 id="password"
                 name="password"
                 type={showPassword ? "text" : "password"}
                 value={password}
-                onChange={(e) => {
-                  setPassword(e.target.value);
-                  setError("");
-                }}
+                onChange={(e) => { setPassword(e.target.value); setError(""); }}
                 placeholder="Enter password"
                 autoComplete="current-password"
                 disabled={loading}
@@ -248,7 +168,7 @@ export default function Login() {
               <button
                 type="button"
                 className="nia-password-toggle"
-                onClick={() => setShowPassword((value) => !value)}
+                onClick={() => setShowPassword((v) => !v)}
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
                 {showPassword ? "Hide" : "Show"}
@@ -265,66 +185,30 @@ export default function Login() {
             </label>
           </div>
 
-          {/* ERROR */}
           {error && (
-            <div
-              className="nia-login-error"
-              role="alert"
-            >
-              {error}
-            </div>
+            <div className="nia-login-error" role="alert">{error}</div>
           )}
 
-          {/* BUTTON */}
           <button
             type="submit"
             className="nia-login-button"
-            disabled={
-              loading ||
-              !username.trim() ||
-              !password
-            }
+            disabled={loading || !username.trim() || !password}
           >
-            <span>
-              {loading
-                ? "Signing in..."
-                : "Sign In"}
-            </span>
-
-            {!loading && (
-              <span aria-hidden="true">
-                →
-              </span>
-            )}
+            <span>{loading ? "Signing in..." : "Sign In"}</span>
+            {!loading && <span aria-hidden="true">→</span>}
           </button>
         </form>
 
-        {/* REGISTER */}
         <div className="nia-login-register">
-          <span>
-            Don't have an account?
-          </span>
-
-          <Link to="/register">
-            Register
-          </Link>
+          <span>Don't have an account?</span>
+          <Link to="/register">Register</Link>
         </div>
 
-        {/* BACK HOME */}
         <div className="nia-login-back-home">
-          <Link
-            to="/"
-            className="nia-back-home"
-          >
-            ← Back Home
-          </Link>
+          <Link to="/" className="nia-back-home">← Back Home</Link>
         </div>
 
-        {/* FOOTER */}
-        <div className="nia-login-footer">
-          © 2026 NIMBLE INTEGRATED ACADEMY
-        </div>
-
+        <div className="nia-login-footer">© 2026 NIMBLE INTEGRATED ACADEMY</div>
       </div>
     </main>
   );
