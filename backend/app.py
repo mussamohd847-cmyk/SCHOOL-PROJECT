@@ -69,10 +69,20 @@ def create_app(config_name=None):
             if origin and origin not in allowed_origins:
                 allowed_origins.append(origin)
 
+    # Ongeza origins zote za production
+    for prod_origin in [
+        "https://nia-school-and-madrasa.onrender.com",
+        "https://niaschool.onrender.com",
+    ]:
+        if prod_origin not in allowed_origins:
+            allowed_origins.append(prod_origin)
+
     CORS(
         app,
         origins=allowed_origins,
         supports_credentials=True,
+        send_wildcard=True,
+        automatic_options=True,
         allow_headers=[
             "Content-Type",
             "Authorization",
