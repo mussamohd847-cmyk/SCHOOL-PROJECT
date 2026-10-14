@@ -1,5 +1,5 @@
 from flask import Blueprint
-from utils.auth import login_required
+from utils.auth import login_required, roles_required
 from utils.responses import success_response
 from models import (
     Student,
@@ -29,6 +29,7 @@ bootstrap_bp = Blueprint(
 
 @bootstrap_bp.route("", methods=["GET"])
 @login_required
+@roles_required("admin")
 def bootstrap():
     data = {
         "students": [

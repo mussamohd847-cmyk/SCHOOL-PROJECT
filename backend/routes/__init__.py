@@ -18,6 +18,7 @@ from routes.payments import payments_bp
 from routes.settings import settings_bp
 from routes.dashboard import dashboard_bp
 from routes.bootstrap import bootstrap_bp
+from routes.portal import portal_bp
 
 
 ALL_BLUEPRINTS = [
@@ -41,4 +42,5 @@ ALL_BLUEPRINTS = [
     settings_bp,
     dashboard_bp,
     bootstrap_bp,
+    portal_bp,
 ]

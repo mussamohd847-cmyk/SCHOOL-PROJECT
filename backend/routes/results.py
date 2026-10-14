@@ -2,7 +2,7 @@ from flask import Blueprint, request
 from openpyxl import load_workbook
 
 from database import db
-from models import Result, Exam, Student, Subject
+from models import Result, Exam, Student, Subject, Teacher, TeacherClass, TeacherSubject
 from utils.auth import login_required, roles_required
 from utils.responses import (
     success_response,
@@ -17,6 +17,24 @@ results_bp = Blueprint(
     __name__,
     url_prefix="/api/results",
 )
+
+
+
+def _teacher_scope(user):
+    teacher = Teacher.query.filter_by(user_id=user.id).first()
+    teacher_id = teacher.id if teacher else user.teacher_id
+    if not teacher_id:
+        return None, None
+
+    class_ids = {
+        row.class_id
+        for row in TeacherClass.query.filter_by(teacher_id=teacher_id).all()
+    }
+    subject_ids = {
+        row.subject_id
+        for row in TeacherSubject.query.filter_by(teacher_id=teacher_id).all()
+    }
+    return class_ids, subject_ids
 
 
 def calculate_total(hw, ct, cw, fe):
@@ -55,6 +73,7 @@ def calculate_grade(total):
 
 @results_bp.route("", methods=["GET"])
 @login_required
+@roles_required("ADMIN", "TEACHER", "STUDENT")
 def list_results():
     query = Result.query
 
@@ -71,6 +90,29 @@ def list_results():
         if value:
             query = query.filter(
                 getattr(Result, field) == value
+            )
+
+    user = request.current_user
+    role = str(user.role or "").strip().lower()
+
+    if role == "student":
+        if not user.student_id:
+            return error_response("Account is not linked to a student", 403)
+        requested_student = request.args.get("student_id", type=int)
+        if requested_student and requested_student != user.student_id:
+            return error_response("You can only view your own results", 403)
+        query = query.filter(Result.student_id == user.student_id)
+
+    elif role == "teacher":
+        class_ids, subject_ids = _teacher_scope(user)
+        if class_ids is None:
+            return error_response("Teacher account is not linked", 403)
+        if not class_ids or not subject_ids:
+            query = query.filter(Result.id == -1)
+        else:
+            query = query.filter(
+                Result.class_id.in_(class_ids),
+                Result.subject_id.in_(subject_ids),
             )
 
     items, pagination = paginate_query(
@@ -573,50 +615,90 @@ def delete_result(result_id):
     methods=["GET"],
 )
 @login_required
+@roles_required("ADMIN", "TEACHER", "STUDENT")
 def student_report(student_id):
-    results = Result.query.filter_by(
-        student_id=student_id
-    ).all()
+    user = request.current_user
+    role = str(user.role or "").strip().lower()
+
+    if role == "student" and user.student_id != student_id:
+        return error_response("You can only view your own report", 403)
+
+    student = db.session.get(Student, student_id)
+    if not student:
+        return error_response("Student not found", 404)
+
+    query = Result.query.filter_by(student_id=student_id)
+
+    if role == "teacher":
+        class_ids, subject_ids = _teacher_scope(user)
+        student_classes = {
+            cid for cid in (student.school_class_id, student.madrasa_class_id)
+            if cid
+        }
+        if class_ids is None:
+            return error_response("Teacher account is not linked", 403)
+        if not (student_classes & class_ids):
+            return error_response("Student is outside your assigned classes", 403)
+        if not subject_ids:
+            query = query.filter(Result.id == -1)
+        else:
+            query = query.filter(Result.subject_id.in_(subject_ids))
+
+    results = query.all()
+    report_results = []
+
+    for result in results:
+        subject = db.session.get(Subject, result.subject_id)
+        exam = db.session.get(Exam, result.exam_id)
+        item = result.to_dict()
+        item.update({
+            "subject_name": subject.name if subject else "",
+            "subject_category": subject.category if subject else "",
+            "exam_name": exam.name if exam else "",
+            "exam_type": exam.exam_type if exam else "",
+            "year_id": exam.year_id if exam else None,
+            "term_id": exam.term_id if exam else None,
+        })
+        report_results.append(item)
 
     average = (
-        round(
-            sum(
-                float(r.total or 0)
-                for r in results
-            )
-            / len(results),
-            2,
-        )
-        if results
-        else 0
+        round(sum(float(r.total or 0) for r in results) / len(results), 2)
+        if results else 0
     )
 
     return success_response(
         "Student report",
         {
             "student_id": student_id,
+            "student": student.to_dict(),
             "average_marks": average,
-            "results": [
-                r.to_dict()
-                for r in results
-            ],
+            "results": report_results,
         },
     )
-
 
 @results_bp.route(
     "/class/<int:class_id>/ranking",
     methods=["GET"],
 )
 @login_required
+@roles_required("ADMIN", "TEACHER")
 def class_ranking(class_id):
+    user = request.current_user
+    if str(user.role or "").strip().lower() == "teacher":
+        class_ids, _ = _teacher_scope(user)
+        if class_ids is None or class_id not in class_ids:
+            return error_response("Class is outside your assignments", 403)
+
     exam_id = request.args.get(
         "exam_id",
         type=int,
     )
 
-    students = Student.query.filter_by(
-        class_id=class_id
+    students = Student.query.filter(
+        db.or_(
+            Student.school_class_id == class_id,
+            Student.madrasa_class_id == class_id,
+        )
     ).all()
 
     student_ids = [
@@ -688,7 +770,14 @@ def class_ranking(class_id):
     methods=["GET"],
 )
 @login_required
+@roles_required("ADMIN", "TEACHER")
 def subject_performance(subject_id):
+    user = request.current_user
+    if str(user.role or "").strip().lower() == "teacher":
+        _, subject_ids = _teacher_scope(user)
+        if subject_ids is None or subject_id not in subject_ids:
+            return error_response("Subject is outside your assignments", 403)
+
     results = Result.query.filter_by(
         subject_id=subject_id
     ).all()

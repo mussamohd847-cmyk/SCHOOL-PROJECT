@@ -1,3 +1,4 @@
+from uuid import uuid4
 from flask import Blueprint, request
 from sqlalchemy import func
 
@@ -26,7 +27,7 @@ payments_bp = Blueprint(
 
 @payments_bp.route("", methods=["GET"])
 @login_required
-@roles_required("ADMIN", "ACCOUNTANT")
+@roles_required("ADMIN")
 def list_payments():
     query = Payment.query
 
@@ -64,6 +65,7 @@ def list_payments():
     methods=["GET"],
 )
 @login_required
+@roles_required("ADMIN", "STUDENT")
 def get_payment(payment_id):
     payment = Payment.query.get(
         payment_id
@@ -73,6 +75,16 @@ def get_payment(payment_id):
         return error_response(
             "Payment not found",
             404,
+        )
+
+    user = request.current_user
+    if (
+        str(user.role).strip().lower() == "student"
+        and user.student_id != payment.student_id
+    ):
+        return error_response(
+            "You can only view your own payments",
+            403,
         )
 
     return success_response(
@@ -90,7 +102,7 @@ def get_payment(payment_id):
     methods=["POST"],
 )
 @login_required
-@roles_required("ADMIN", "ACCOUNTANT")
+@roles_required("ADMIN")
 def create_payment():
 
     data = (
@@ -207,6 +219,9 @@ def create_payment():
     payment = Payment(
         student_id=student.id,
         fee_structure_id=fee.id,
+        receipt_no=f"NIA-{uuid4().hex[:20].upper()}",
+        term_id=fee.term_id,
+        year_id=fee.year_id,
         amount=amount,
         payment_date=parse_date(
             data["payment_date"]
@@ -246,7 +261,7 @@ def create_payment():
     methods=["PUT"],
 )
 @login_required
-@roles_required("ADMIN", "ACCOUNTANT")
+@roles_required("ADMIN")
 def update_payment(payment_id):
 
     payment = Payment.query.get(
@@ -392,7 +407,7 @@ def update_payment(payment_id):
     methods=["DELETE"],
 )
 @login_required
-@roles_required("ADMIN", "ACCOUNTANT")
+@roles_required("ADMIN")
 def delete_payment(payment_id):
 
     payment = Payment.query.get(
@@ -422,6 +437,7 @@ def delete_payment(payment_id):
     methods=["GET"],
 )
 @login_required
+@roles_required("ADMIN", "STUDENT")
 def student_balance(student_id):
 
     student = Student.query.get(
@@ -432,6 +448,16 @@ def student_balance(student_id):
         return error_response(
             "Student not found",
             404,
+        )
+
+    user = request.current_user
+    if (
+        str(user.role).strip().lower() == "student"
+        and user.student_id != student_id
+    ):
+        return error_response(
+            "You can only view your own balance",
+            403,
         )
 
     # -----------------------------------------------------

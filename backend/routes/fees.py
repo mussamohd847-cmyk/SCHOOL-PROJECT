@@ -4,6 +4,7 @@ from flask import Blueprint, request, jsonify
 
 from database import db
 from models import FeeStructure
+from utils.auth import login_required, roles_required
 
 
 fees_bp = Blueprint(
@@ -31,6 +32,7 @@ def serialize_fee(fee):
 
 
 @fees_bp.route("", methods=["GET"])
+@login_required
 def get_fees():
     try:
         fees = (
@@ -54,6 +56,8 @@ def get_fees():
 
 
 @fees_bp.route("", methods=["POST"])
+@login_required
+@roles_required("ADMIN")
 def create_fee():
     try:
         data = request.get_json(silent=True) or {}
@@ -160,6 +164,8 @@ def create_fee():
 
 
 @fees_bp.route("/<int:fee_id>", methods=["PUT", "PATCH"])
+@login_required
+@roles_required("ADMIN")
 def update_fee(fee_id):
     try:
         fee = FeeStructure.query.get(fee_id)
@@ -251,6 +257,8 @@ def update_fee(fee_id):
 
 
 @fees_bp.route("/<int:fee_id>", methods=["DELETE"])
+@login_required
+@roles_required("ADMIN")
 def delete_fee(fee_id):
     try:
         fee = FeeStructure.query.get(fee_id)

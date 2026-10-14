@@ -52,6 +52,24 @@ def serialize_student(student):
     return student.to_dict()
 
 
+def generate_admission_no(admission_year):
+    prefix = f"{admission_year % 100:02d}NIA"
+
+    existing_numbers = (
+        db.session.query(Student.admission_no)
+        .filter(Student.admission_no.like(f"{prefix}%"))
+        .all()
+    )
+
+    highest = 0
+    for (number,) in existing_numbers:
+        suffix = number[len(prefix):]
+        if suffix.isdigit():
+            highest = max(highest, int(suffix))
+
+    return f"{prefix}{highest + 1:04d}"
+
+
 def validate_student_data(data, editing=False):
     admission_no = get_value(
         data,
@@ -83,9 +101,6 @@ def validate_student_data(data, editing=False):
     )
 
     if not editing:
-        if not admission_no:
-            return "Admission number is required"
-
         if not first_name:
             return "First name is required"
 
@@ -385,7 +400,6 @@ def apply_student_data(student, data):
 @roles_required(
     "admin",
     "teacher",
-    "accountant"
 )
 def list_students():
 
@@ -620,22 +634,6 @@ def create_student():
             400
         )
 
-    admission_no = get_value(
-        data,
-        "admissionNo",
-        "admission_no"
-    )
-
-    existing = Student.query.filter_by(
-        admission_no=admission_no
-    ).first()
-
-    if existing:
-        return error_response(
-            "Admission number already exists",
-            409
-        )
-
     student = Student()
 
     apply_student_data(
@@ -648,6 +646,10 @@ def create_student():
             "Admission date is required",
             400
         )
+
+    student.admission_no = generate_admission_no(
+        student.admission_date.year
+    )
 
     try:
 
