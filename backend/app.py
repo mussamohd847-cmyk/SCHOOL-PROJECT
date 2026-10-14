@@ -51,6 +51,8 @@ def create_app(config_name=None):
         "http://localhost:5174",
         "http://127.0.0.1:5173",
         "http://127.0.0.1:5174",
+        "https://nia-school-and-madrasa.onrender.com",
+        "https://niaschool.onrender.com",
     ]
 
     env_origins = os.environ.get(
