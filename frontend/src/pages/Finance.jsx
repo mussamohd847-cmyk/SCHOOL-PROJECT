@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { dataCache } from "../utils/dataCache";
 import api from "../services/api";
 import {
   Page,
@@ -377,14 +378,35 @@ export default function Finance() {
         classesResponse,
         yearsResponse,
         termsResponse,
-      ] = await Promise.all([
-        api.get("/payments"),
-        api.get("/students"),
-        api.get("/fees"),
-        api.get("/classes"),
-        api.get("/academic-years"),
-        api.get("/terms"),
-      ]);
+      ] = await (async () => {
+        // 🔥 Angalia cache kwanza
+        const cached = dataCache.get("finance_data");
+        if (cached) {
+          return cached.map(d => ({ data: { data: d } }));
+        }
+
+        // 🔥 Requests za mfululizo (si kwa wakati mmoja)
+        const payments = await api.get("/payments");
+        const students = await api.get("/students");
+        const fees = await api.get("/fees");
+        const classes = await api.get("/classes");
+        const years = await api.get("/academic-years");
+        const terms = await api.get("/terms");
+
+        const result = [payments, students, fees, classes, years, terms];
+
+        // 🔥 Hifadhi kwenye cache
+        dataCache.set("finance_data", [
+          payments.data?.data || payments.data,
+          students.data?.data || students.data,
+          fees.data?.data || fees.data,
+          classes.data?.data || classes.data,
+          years.data?.data || years.data,
+          terms.data?.data || terms.data,
+        ]);
+
+        return result;
+      })();
 
       setPayments(
         extractData(paymentsResponse).map(
