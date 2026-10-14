@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import { Page, Card } from "../components/Page";
+import { dataCache } from "../utils/dataCache";
 
 function StatCard({ icon, title, value, subtitle, tone = "blue" }) {
   return (
@@ -122,20 +123,35 @@ export default function Dashboard() {
   );
 
   const loadDashboard = async (initial = false) => {
+    // 🔥 Onyesha data ya cache mara moja
+    if (initial) {
+      const cached = dataCache.get("admin_dashboard");
+      if (cached) {
+        setData(cached);
+        setLoading(false);
+      }
+    }
+
     try {
       setError("");
 
       const response = await api.get("/dashboard/admin");
+      const freshData = response.data?.data || response.data || {};
 
-      setData(response.data?.data || response.data || {});
+      setData(freshData);
+      dataCache.set("admin_dashboard", freshData); // 🔥 Hifadhi kwenye cache
     } catch (err) {
       console.error("Dashboard error:", err);
 
-      setError(
-        err.response?.data?.message ||
-          err.response?.data?.error ||
-          "Unable to load dashboard data."
-      );
+      // Kama tuna cache, usionyeshe error
+      const cached = dataCache.get("admin_dashboard");
+      if (!cached) {
+        setError(
+          err.response?.data?.message ||
+            err.response?.data?.error ||
+            "Unable to load dashboard data."
+        );
+      }
     } finally {
       setLoading(false);
     }
@@ -145,7 +161,7 @@ export default function Dashboard() {
     loadDashboard(true);
     const timer = setInterval(() => {
       if (document.visibilityState === "visible") loadDashboard(false);
-    }, 10000);
+    }, 5 * 60 * 1000);
     return () => clearInterval(timer);
   }, []);
 
